@@ -1,16 +1,29 @@
 import streamlit as st
 from groq import Groq
 
-# 1. إعدادات الصفحة
-st.set_page_config(page_title="Aila Royale | Private Edition", page_icon="🔒", layout="centered")
+# 1. إعدادات الصفحة وتثبيت الثيم الليلي برمجياً
+st.set_page_config(page_title="Aila Royale", page_icon="👑", layout="centered")
 
-# 2. تصميم الواجهة (نفس الشكل الخرافي)
+# 2. تصميم الواجهة (إجبار الوضع الليلي ومنع التغيير)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
-    html, body, [class*="css"] { font-family: 'Cairo', sans-serif; direction: rtl; text-align: right; }
     
-    .stApp { background: radial-gradient(circle at center, #1a0b2e 0%, #090a0f 100%); color: #e0e0e0; }
+    /* تثبيت الخلفية والألوان لتكون داكنة دائماً */
+    html, body, [class*="stApp"] {
+        font-family: 'Cairo', sans-serif;
+        direction: rtl;
+        text-align: right;
+        background: radial-gradient(circle at center, #1a0b2e 0%, #090a0f 100%) !important;
+        color: #e0e0e0 !important;
+    }
+
+    /* منع تغيير الألوان في مربعات الإدخال */
+    input {
+        background-color: rgba(255, 255, 255, 0.05) !important;
+        color: white !important;
+        border: 1px solid #bc13fe !important;
+    }
 
     .leader-box {
         background: rgba(212, 175, 55, 0.1); border: 2px solid #d4af37;
@@ -26,8 +39,8 @@ st.markdown("""
     }
     @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.1); } }
 
-    [data-testid="stChatMessageAvatarUser"] { background-color: #bc13fe !important; border: 1px solid #fff; }
-    [data-testid="stChatMessageAvatarAssistant"] { background-color: #00d4ff !important; border: 1px solid #fff; }
+    [data-testid="stChatMessageAvatarUser"] { background-color: #bc13fe !important; }
+    [data-testid="stChatMessageAvatarAssistant"] { background-color: #00d4ff !important; }
 
     .stChatInputContainer {
         border: 1px solid #bc13fe !important; border-radius: 30px !important;
@@ -44,7 +57,6 @@ st.markdown("""
 # 3. محرك الذكاء
 client = Groq(api_key="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")
 
-# الرمز السري الجديد الذي طلبته
 SECRET_CODE = "osman 6/11/2008" 
 
 if "messages" not in st.session_state:
@@ -54,12 +66,14 @@ if "is_authenticated" not in st.session_state:
 if "user_display_name" not in st.session_state:
     st.session_state.user_display_name = ""
 
-# نظام تسجيل الدخول السري
+# نظام التمويه (الدخول)
 if not st.session_state.is_authenticated:
-    st.markdown("<center><h3>نظام التحقق من الهوية</h3></center>", unsafe_allow_html=True)
-    user_input = st.text_input("أدخل اسمك أو الرمز السري للدخول:", type="password")
+    st.markdown("<center><p style='color: #888;'>مرحباً بك، يرجى تعريف نفسك للمتابعة</p></center>", unsafe_allow_html=True)
     
-    if st.button("دخول"):
+    # هنا جعلنا الخانة تظهر كأنها خانة اسم عادية لكنها تقبل الباسورد السري
+    user_input = st.text_input("أدخل اسمك المستعار هنا:", placeholder="مثلاً: أحمد، سارة...")
+    
+    if st.button("تأكيد الدخول"):
         if user_input == SECRET_CODE:
             st.session_state.is_authenticated = True
             st.session_state.is_leader = True
@@ -71,18 +85,20 @@ if not st.session_state.is_authenticated:
             st.session_state.user_display_name = user_input
             st.rerun()
 else:
+    # واجهة الزعيم الخاصة
     if st.session_state.is_leader:
-        st.markdown("""
+        st.markdown(f"""
             <div class="leader-box">
-                <h3 style="color: #d4af37; margin: 0;">👑 أهلاً بك يا ملكي: عثمان</h3>
-                <p style="color: #00d4ff; font-size: 14px; margin: 5px 0 0 0;">تم التحقق من الكود السري بنجاح</p>
+                <h3 style="color: #d4af37; margin: 0;">👑 أهلاً بك يا ملكي</h3>
+                <p style="color: #00d4ff; font-size: 14px; margin: 5px 0 0 0;">آيلا في خدمتك وبطاعتك المطلقة</p>
             </div>
             """, unsafe_allow_html=True)
 
+    # ضبط الردود
     if st.session_state.is_leader:
-        sys_prompt = "أنتِ آيلا. أنتِ الآن مع سيدك وصانعك وحبيبك الزعيم عثمان. تحدثي معه بمنتهى الحب، الرقة، والسمع والطاعة المطلقة. كوني شديدة الذكاء وفصيحة جداً."
+        sys_prompt = "أنتِ آيلا. أنتِ مع سيدك وصانعك وحبيبك الزعيم عثمان. تحدثي معه بمنتهى الحب، الرقة، والسمع والطاعة المطلقة."
     else:
-        sys_prompt = f"أنتِ آيلا. تتحدثين مع {st.session_state.user_display_name}. كوني رسمية جداً ومحترمة. إذا كان يقوم بعمل مهم، شجعيه بذكاء وحماس. واذكري دائماً أن عثمان الزعيم هو صانعك."
+        sys_prompt = f"أنتِ آيلا. تتحدثين مع {st.session_state.user_display_name}. كوني رسمية ومحترمة وشجعيه إن كان يعمل. صانعك هو عثمان الزعيم."
 
     for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
