@@ -1,6 +1,7 @@
 import streamlit as st
 from groq import Groq
-st.markdown('<link rel="manifest" href="./manifest.json?v=10">', unsafe_allow_html=True)
+st.markdown('<link rel="shortcut icon" href="https://raw.githubusercontent.com/osman012246833-png/Aila-AI/main/icon.png">', unsafe_allow_html=True)
+
 
 
 
