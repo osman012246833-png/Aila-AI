@@ -4,7 +4,7 @@ from groq import Groq
 # 1. إعدادات الصفحة
 st.set_page_config(page_title="Aila", page_icon="👑", layout="centered")
 
-# 2. تصميم الواجهة (النسخة الصافية الفخمة بالاسمين)
+# 2. تصميم الواجهة (ضبط المحاذاة في المنتصف تماماً)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
@@ -17,12 +17,44 @@ st.markdown("""
         color: #ffffff !important;
     }
 
+    /* حاوية العنوان لضمان التوسط */
+    .header-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        width: 100%;
+        margin-bottom: 20px;
+    }
+
+    /* الهالة الضوئية */
+    .glowing-aura {
+        width: 100px; height: 100px; border: 3px solid #00d4ff; border-radius: 50%;
+        display: inline-block; box-shadow: 0 0 30px #00d4ff;
+        animation: pulse 2s infinite alternate;
+    }
+    @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.05); } }
+
+    /* تنسيق النص المدمج في المنتصف */
+    .main-title {
+        color: #ffffff;
+        text-shadow: 0 0 15px #bc13fe;
+        margin: 15px 0;
+        font-size: 2.5rem;
+        font-weight: bold;
+        display: block;
+        width: 100%;
+        text-align: center;
+    }
+
     /* تنسيق الأزرار العلوية */
     .pills-container {
         display: flex;
         justify-content: center;
         gap: 12px;
         margin-bottom: 25px;
+        width: 100%;
     }
     .pill {
         border: 2px solid #00d4ff;
@@ -34,15 +66,6 @@ st.markdown("""
         background: rgba(0, 212, 255, 0.1);
         white-space: nowrap;
     }
-
-    /* الهالة الضوئية */
-    .aura-container { text-align: center; padding: 10px; }
-    .glowing-aura {
-        width: 100px; height: 100px; border: 3px solid #00d4ff; border-radius: 50%;
-        display: inline-block; box-shadow: 0 0 30px #00d4ff;
-        animation: pulse 2s infinite alternate;
-    }
-    @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.05); } }
 
     /* أيقونات الدردشة */
     [data-testid="stChatMessageAvatarUser"] { background-color: #bc13fe !important; border: 1px solid white; }
@@ -73,9 +96,9 @@ st.markdown("""
     }
     </style>
 
-    <div class="aura-container">
+    <div class="header-container">
         <div class="glowing-aura"></div>
-        <h1 style="color: #ffffff; text-shadow: 0 0 15px #bc13fe; margin: 15px 0;">آيلا | Aila</h1>
+        <h1 class="main-title">آيلا | Aila</h1>
     </div>
 
     <div class="pills-container">
