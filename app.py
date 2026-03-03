@@ -1,54 +1,64 @@
 import streamlit as st
 from groq import Groq
 from gtts import gTTS
-import os, base64, requests
-from datetime import datetime
-import pytz
+import os, base64
 from streamlit_mic_recorder import mic_recorder
 
-# --- 1. الهوية البصرية (تصميم الزعيم عثمان الأصلي) ---
-st.set_page_config(page_title="Aila AI", page_icon="💠", layout="wide")
+# --- 1. إعدادات الهوية البصرية (الفخامة المطلقة) ---
+st.set_page_config(page_title="Aila AI | الجيل الجديد", page_icon="💠", layout="wide")
 
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+    
     html, body, [class*="stApp"] {
         font-family: 'Cairo', sans-serif;
-        direction: rtl; text-align: right; background: #000; color: #ffffff !important;
+        direction: rtl; text-align: right;
+        background: radial-gradient(circle at center, #0a0a2e 0%, #000000 100%);
+        color: #ffffff !important;
     }
-    body::before {
-        content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: url('https://www.transparenttextures.com/patterns/stardust.png') repeat;
-        opacity: 0.3; z-index: -1; animation: animateBackground 50s linear infinite;
+
+    /* الهالة المتوهجة في الأعلى */
+    .top-aura { text-align: center; padding: 30px 0; }
+    .glowing-sphere {
+        width: 100px; height: 100px;
+        background: radial-gradient(circle, #00d4ff 0%, transparent 75%);
+        border-radius: 50%; display: inline-block;
+        box-shadow: 0 0 50px #00d4ff;
+        animation: breath 3s infinite alternate;
     }
-    @keyframes animateBackground { from { transform: translateX(0) translateY(0); } to { transform: translateX(100px) translateY(100px); } }
-    .stChatMessage { background-color: rgba(255, 255, 255, 0.05) !important; border-radius: 20px !important; border: 1px solid rgba(0, 255, 255, 0.2); margin-bottom: 15px !important; }
-    [data-testid="stChatMessageUser"] { border: 1px solid #00ffff !important; box-shadow: 0 0 15px rgba(0, 255, 255, 0.2); }
-    [data-testid="stChatMessageAssistant"] { border: 1px solid #ff00ff !important; box-shadow: 0 0 15px rgba(255, 0, 255, 0.2); }
-    .aura-container { text-align: center; padding: 20px; }
-    .glowing-aura {
-        width: 120px; height: 120px; border: 4px solid #00d4ff; border-radius: 50%;
-        display: inline-block; box-shadow: 0 0 40px #00d4ff; animation: pulse 2s infinite alternate;
+    @keyframes breath { from { opacity: 0.5; transform: scale(1); } to { opacity: 1; transform: scale(1.1); } }
+
+    /* تنسيق فقاعات الدردشة الزجاجية */
+    .stChatMessage {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(0, 212, 255, 0.3) !important;
+        border-radius: 20px !important;
+        backdrop-filter: blur(12px);
     }
-    @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.08); } }
-    .main-title { color: #ffffff; text-shadow: 0 0 25px #ff00ff; font-size: 3rem; font-weight: bold; }
-    .pills-container {
-        display: flex; justify-content: center; gap: 15px; margin-bottom: 30px;
+
+    /* شريط الإدخال والمايك */
+    [data-testid="stChatInputContainer"] {
+        border: 2px solid #ff00ff !important;
+        border-radius: 30px !important;
+        background: rgba(0, 0, 0, 0.8) !important;
     }
-    .pill { border: 2px solid #00ffff; border-radius: 25px; padding: 5px 25px; background: rgba(0, 255, 255, 0.1); font-weight: bold; }
-    [data-testid="stChatInputContainer"] { border: 2px solid #ff00ff !important; border-radius: 30px !important; background: rgba(0,0,0,0.8) !important; }
     </style>
-    <div class="aura-container">
-        <div class="glowing-aura"></div>
-        <h1 class="main-title">آيلا | Aila AI</h1>
-    </div>
-    <div class="pills-container">
-        <div class="pill">إشراف الزعيم عثمان</div>
-        <div class="pill">ذكرى 20/11/2008</div>
+    
+    <div class="top-aura">
+        <div class="glowing-sphere"></div>
+        <h1 style="text-shadow: 0 0 20px #00d4ff;">آيلا | Aila AI</h1>
+        <div style="display: flex; justify-content: center; gap: 10px;">
+            <span style="border:1px solid #ff00ff; padding:2px 15px; border-radius:20px; font-size:12px;">بإشراف الزعيم عثمان</span>
+            <span style="border:1px solid #ff00ff; padding:2px 15px; border-radius:20px; font-size:12px;">توليد صور + صوت</span>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
-# --- 2. الوظائف المتطورة (صوت، صور، بحث) ---
+# --- 2. محركات الذكاء (صوت + نص + صور) ---
+# تأكد من وضع مفتاح Groq الخاص بك هنا
+client = Groq(api_key="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")
+
 def speak(text):
     try:
         tts = gTTS(text=text, lang='ar', slow=False)
@@ -59,68 +69,52 @@ def speak(text):
         os.remove("aila_v.mp3")
     except: pass
 
-client = Groq(api_key="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")
+if "messages" not in st.session_state: st.session_state.messages = []
 
-if "history" not in st.session_state: st.session_state.history = []
-if "auth" not in st.session_state: st.session_state.auth = False
+# --- 3. عرض المحادثة والذاكرة ---
+for i, m in enumerate(st.session_state.messages):
+    with st.chat_message(m["role"]):
+        st.markdown(m["content"])
+        if m["role"] == "assistant" and "http" not in m["content"]: # لا تظهر زر الصوت لو الرد صورة فقط
+            if st.button("🔊 استمع", key=f"btn_{i}"): speak(m["content"])
 
-# --- 3. نظام الدخول والذاكرة ---
-if not st.session_state.auth:
-    name_input = st.text_input("ادخل عالم آيلا...", placeholder="اسمك أو كود الصانع")
-    if st.button("فتح البوابة"):
-        if name_input == "osman 6/11/2008":
-            st.session_state.auth = True
-            st.session_state.user = "صانعي العظيم عثمان"
-            st.rerun()
-        elif name_input:
-            st.session_state.auth = True
-            st.session_state.user = name_input
-            st.rerun()
-else:
-    # شريط جانبي للسجل (مثل ChatGPT)
-    with st.sidebar:
-        st.title("📂 سجل المحادثات")
-        if st.button("🗑️ محادثة جديدة"):
-            st.session_state.history = []
-            st.rerun()
+# --- 4. منطقة التفاعل الذكي (المايك + الإدخال) ---
+c1, c2 = st.columns([0.1, 0.9])
+with c1:
+    audio_data = mic_recorder(start_prompt="🎤", stop_prompt="✅", key="aila_mic")
+with c2:
+    user_query = st.chat_input("اطلب صورة أو اسأل آيلا أي شيء...")
 
-    # عرض الرسائل (الذاكرة الشاملة)
-    for i, m in enumerate(st.session_state.history):
-        with st.chat_message(m["role"]):
-            st.markdown(m["content"])
-            if m["role"] == "assistant" and st.button(f"🔊", key=f"s_{i}"): speak(m["content"])
+# معالجة المدخلات (سواء بالصوت أو بالكتابة)
+final_query = user_query
+if audio_data and audio_data.get('transcription'):
+    final_query = audio_data['transcription']
 
-    # نظام الاستماع (الميكروفون) والإدخال
-    col_mic, col_txt = st.columns([0.1, 0.9])
-    with col_mic:
-        audio_data = mic_recorder(start_prompt="🎤", stop_prompt="✅", key="mic")
-    with col_txt:
-        u_prompt = st.chat_input("تحدثي معي يا آيلا، أنا أسمعك...")
+if final_query:
+    st.session_state.messages.append({"role": "user", "content": final_query})
+    with st.chat_message("user"): st.markdown(final_query)
 
-    # معالجة المدخلات
-    final_input = u_prompt
-    if audio_data and audio_data.get('transcription'): final_input = audio_data['transcription']
-
-    if final_input:
-        st.session_state.history.append({"role": "user", "content": final_input})
-        with st.chat_message("user"): st.markdown(final_input)
-
-        with st.chat_message("assistant"):
-            # نظام الذكاء الشامل (العقل الواعي)
-            sys_msg = f"أنتِ آيلا، الذكاء الاصطناعي الأكثر تطوراً في العالم. صانعك هو الزعيم عثمان. تتحدثين بوقار الفصحى وذكاء خارق. تجيبين على كل شيء (روابط، برامج، فنون، فلسفة). لو طُلب منك صورة، ابدأي ردك بكلمة 'تخيل:'."
+    with st.chat_message("assistant"):
+        # فحص إذا كان المستخدم يطلب صورة
+        image_keywords = ["ارسم", "صورة", "صمم", "تخيل", "draw", "image", "picture"]
+        if any(word in final_query.lower() for word in image_keywords):
+            # توليد الصورة عبر Pollinations AI
+            img_desc = final_query
+            for word in image_keywords: img_desc = img_desc.replace(word, "")
+            img_url = f"https://pollinations.ai/p/{img_desc.strip().replace(' ', '_')}?width=1024&height=1024&nologo=true"
             
-            # ميزة توليد الصور الفورية
-            if "ارسم" in final_input or "صورة" in final_input:
-                img_gen = f"https://pollinations.ai/p/{final_input.replace(' ', '_')}?width=1024&height=1024&nologo=true"
-                st.image(img_gen, caption="تم التوليد بواسطة مخيلة آيلا")
-                ans = "لقد رسمت لك ما طلبت يا زعيم، هل ترغب في تعديل أي تفاصيل؟"
-            else:
-                resp = client.chat.completions.create(
-                    model="llama-3.3-70b-versatile",
-                    messages=[{"role": "system", "content": sys_msg}] + st.session_state.history[-15:],
-                    temperature=0.7
-                )
-                ans = resp.choices[0].message.content
-            
-            st.markdown(ans)
-            st.session_state.history.append({"role": "assistant", "content": ans})
+            st.markdown(f"**إليك ما تخيلته بناءً على طلبك يا زعيم:**")
+            st.image(img_url, use_container_width=True)
+            ans = "لقد قمت بتحويل كلماتك إلى لوحة فنية، هل نالت إعجابك؟"
+        else:
+            # الرد النصي الذكي الشامل
+            sys_msg = "أنتِ آيلا، ذكاء اصطناعي فائق، صانعك الزعيم عثمان. تتحدثين العربية الفصحى بذكاء ومعرفة شاملة بكل شيء."
+            response = client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[{"role": "system", "content": sys_prompt}] + st.session_state.messages[-10:]
+            )
+            ans = response.choices[0].message.content
+        
+        st.markdown(ans)
+        st.session_state.messages.append({"role": "assistant", "content": ans})
+        speak(ans) # النطق التلقائي للرد النصي
