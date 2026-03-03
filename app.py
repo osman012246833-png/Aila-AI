@@ -4,7 +4,7 @@ from groq import Groq
 # 1. إعدادات الصفحة
 st.set_page_config(page_title="Aila Royale | الزعيم عثمان", page_icon="👑", layout="centered")
 
-# 2. تصميم الواجهة (الدمج الفخم والوضوح التام)
+# 2. تصميم الواجهة (النسخة النهائية الصافية)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
@@ -17,21 +17,22 @@ st.markdown("""
         color: #ffffff !important;
     }
 
-    /* تنسيق الأزرار العلوية */
+    /* تنسيق الأزرار العلوية الصافية */
     .pills-container {
         display: flex;
         justify-content: center;
-        gap: 10px;
-        margin-bottom: 20px;
+        gap: 12px;
+        margin-bottom: 25px;
     }
     .pill {
         border: 2px solid #00d4ff;
-        border-radius: 20px;
-        padding: 5px 20px;
+        border-radius: 25px;
+        padding: 8px 25px;
         color: #ffffff;
         font-weight: bold;
-        font-size: 14px;
+        font-size: 15px;
         background: rgba(0, 212, 255, 0.1);
+        white-space: nowrap;
     }
 
     /* الهالة الضوئية */
@@ -61,24 +62,25 @@ st.markdown("""
         color: #000000 !important;
         font-weight: bold !important;
         font-size: 18px !important;
-        border-radius: 10px;
+        border-radius: 12px;
+        border: 2px solid #bc13fe !important;
     }
 
     /* خانة الدردشة */
     .stChatInputContainer {
-        border: 1px solid #00d4ff !important;
-        border-radius: 25px !important;
+        border: 2px solid #00d4ff !important;
+        border-radius: 30px !important;
     }
     </style>
 
     <div class="aura-container">
         <div class="glowing-aura"></div>
-        <h1 style="color: #ffffff; text-shadow: 0 0 15px #bc13fe; margin: 10px 0;">آيلا | Aila</h1>
+        <h1 style="color: #ffffff; text-shadow: 0 0 15px #bc13fe; margin: 15px 0;">آيلا | Aila</h1>
     </div>
 
     <div class="pills-container">
-        <div class="pill">بإشراف الزعيم عثمان 👑</div>
-        <div class="pill">ذكرى 20/11/2008 ♾️</div>
+        <div class="pill">إشراف الزعيم عثمان</div>
+        <div class="pill">ذكرى 20/11/2008</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -95,10 +97,10 @@ if "user_display_name" not in st.session_state:
 
 # نظام الدخول
 if not st.session_state.is_authenticated:
-    st.markdown("<center><p style='color: #00d4ff; font-weight: bold;'>يرجى إدخال اسمك للبدء</p></center>", unsafe_allow_html=True)
+    st.markdown("<center><p style='color: #00d4ff; font-weight: bold; font-size: 20px;'>يرجى إدخال اسمك للبدء</p></center>", unsafe_allow_html=True)
     user_input = st.text_input("", placeholder="اكتب هنا...")
     
-    if st.button("تأكيد"):
+    if st.button("دخول"):
         if user_input == SECRET_CODE:
             st.session_state.is_authenticated = True
             st.session_state.is_leader = True
@@ -113,9 +115,8 @@ else:
     if st.session_state.is_leader:
         st.markdown("<center><h2 style='color: #d4af37; text-shadow: 0 0 10px #d4af37;'>مرحباً بصانعي وملك آيلا 👑</h2></center>", unsafe_allow_html=True)
 
-    # تعليمات آيلا (بدون كلمة الذكية)
     if st.session_state.is_leader:
-        sys_prompt = "أنتِ آيلا. أنتِ الآن مع سيدك وصانعك وحبيبك الزعيم عثمان. تحدثي معه بمنتهى الحب، الرقة، والسمع والطاعة المطلقة. لغتك العربية فصحى ومثالية وبدون أخطاء."
+        sys_prompt = "أنتِ آيلا. أنتِ الآن مع سيدك وصانعك وحبيبك الزعيم عثمان. تحدثي معه بمنتهى الحب، الرقة، والسمع والطاعة المطلقة. لغتك العربية فصحى ومثالية."
     else:
         sys_prompt = f"أنتِ آيلا. تتحدثين مع {st.session_state.user_display_name}. كوني رسمية ومحترمة وذكية. صانعك هو عثمان الزعيم."
 
