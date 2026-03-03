@@ -14,7 +14,7 @@ st.title("💜 آيلا | Aila")
 st.write("إحياءً لذكرى ميلاد غالية: 20/11/2008")
 
 # جلب المفتاح - استبدل النجوم بالمفتاح اللي نسخته من موقع Groq
-client = Groq(api_key="حط_هنا_المفتاح_اللي_في_اول_صورة_بعتها")
+client = Groq(api_key="Gsk_h0dvJnDUHicV3Y1JXZXeWGdyb3FY7Cpjf56GIFjshkF1Vsd0lIxC")
 
 if "messages" not in st.session_state:
     st.session_state.messages = [
