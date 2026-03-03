@@ -4,7 +4,7 @@ from groq import Groq
 # 1. إعدادات الصفحة
 st.set_page_config(page_title="Aila", page_icon="👑", layout="centered")
 
-# 2. تصميم الواجهة (توسط عرض التليفون بالملي)
+# 2. تصميم الواجهة (النسخة الصافية الفخمة بالاسمين)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
@@ -17,55 +17,32 @@ st.markdown("""
         color: #ffffff !important;
     }
 
-    /* حاوية تضمن التوسط العرضي الكامل */
-    .full-center-container {
-        width: 100%;
+    /* تنسيق الأزرار العلوية */
+    .pills-container {
         display: flex;
-        flex-direction: column;
-        align-items: center; /* توسط عرضي بالملي */
-        justify-content: flex-start;
-        text-align: center;
-        margin-bottom: 20px;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 25px;
+    }
+    .pill {
+        border: 2px solid #00d4ff;
+        border-radius: 25px;
+        padding: 8px 25px;
+        color: #ffffff;
+        font-weight: bold;
+        font-size: 15px;
+        background: rgba(0, 212, 255, 0.1);
+        white-space: nowrap;
     }
 
     /* الهالة الضوئية */
+    .aura-container { text-align: center; padding: 10px; }
     .glowing-aura {
         width: 100px; height: 100px; border: 3px solid #00d4ff; border-radius: 50%;
         display: inline-block; box-shadow: 0 0 30px #00d4ff;
         animation: pulse 2s infinite alternate;
     }
     @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.05); } }
-
-    /* العنوان الرئيسي في منتصف العرض تماماً */
-    .main-title {
-        color: #ffffff;
-        text-shadow: 0 0 15px #bc13fe;
-        margin: 15px 0;
-        font-size: 2.2rem;
-        font-weight: bold;
-        width: 100%; /* تأخذ العرض كاملاً لتوسيط النص */
-        text-align: center;
-    }
-
-    /* الأزرار العلوية في منتصف العرض تماماً */
-    .pills-container {
-        display: flex;
-        justify-content: center; /* تجميعهم في المنتصف */
-        flex-wrap: wrap; /* لو الشاشة صغيرة ينزلوا تحت بعض برضه في النص */
-        gap: 12px;
-        margin-bottom: 25px;
-        width: 100%;
-    }
-    .pill {
-        border: 2px solid #00d4ff;
-        border-radius: 25px;
-        padding: 8px 20px;
-        color: #ffffff;
-        font-weight: bold;
-        font-size: 14px;
-        background: rgba(0, 212, 255, 0.1);
-        white-space: nowrap;
-    }
 
     /* أيقونات الدردشة */
     [data-testid="stChatMessageAvatarUser"] { background-color: #bc13fe !important; border: 1px solid white; }
@@ -96,14 +73,14 @@ st.markdown("""
     }
     </style>
 
-    <div class="full-center-container">
+    <div class="aura-container">
         <div class="glowing-aura"></div>
-        <h1 class="main-title">آيلا | Aila</h1>
-        
-        <div class="pills-container">
-            <div class="pill">إشراف الزعيم عثمان</div>
-            <div class="pill">ذكرى 20/11/2008</div>
-        </div>
+        <h1 style="color: #ffffff; text-shadow: 0 0 15px #bc13fe; margin: 15px 0;">آيلا | Aila</h1>
+    </div>
+
+    <div class="pills-container">
+        <div class="pill">إشراف الزعيم عثمان</div>
+        <div class="pill">ذكرى 20/11/2008</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -120,7 +97,7 @@ if "user_display_name" not in st.session_state:
 
 # نظام الدخول
 if not st.session_state.is_authenticated:
-    st.markdown("<center><p style='color: #00d4ff; font-weight: bold; font-size: 18px;'>يرجى إدخال اسمك للبدء</p></center>", unsafe_allow_html=True)
+    st.markdown("<center><p style='color: #00d4ff; font-weight: bold; font-size: 20px;'>يرجى إدخال اسمك للبدء</p></center>", unsafe_allow_html=True)
     user_input = st.text_input("", placeholder="اكتب هنا...")
     
     if st.button("دخول"):
