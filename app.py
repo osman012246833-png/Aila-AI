@@ -1,10 +1,10 @@
 import streamlit as st
 from groq import Groq
 
-# 1. إعدادات الصفحة
-st.set_page_config(page_title="Aila Royale | الزعيم عثمان", page_icon="👑", layout="centered")
+# 1. إعدادات الصفحة (الاسم الجديد والأيقونة المميزة)
+st.set_page_config(page_title="Aila", page_icon="👑", layout="centered")
 
-# 2. تصميم الواجهة (النسخة النهائية الصافية)
+# 2. تصميم الواجهة (النسخة الصافية الفخمة)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
@@ -35,7 +35,7 @@ st.markdown("""
         white-space: nowrap;
     }
 
-    /* الهالة الضوئية */
+    /* الهالة الضوئية الثابتة */
     .aura-container { text-align: center; padding: 10px; }
     .glowing-aura {
         width: 100px; height: 100px; border: 3px solid #00d4ff; border-radius: 50%;
@@ -48,7 +48,7 @@ st.markdown("""
     [data-testid="stChatMessageAvatarUser"] { background-color: #bc13fe !important; border: 1px solid white; }
     [data-testid="stChatMessageAvatarAssistant"] { background-color: #00d4ff !important; border: 1px solid white; }
 
-    /* وضوح النصوص */
+    /* وضوح النصوص في الدردشة */
     .stChatMessage p {
         color: #ffffff !important;
         font-size: 18px !important;
@@ -56,7 +56,7 @@ st.markdown("""
         font-weight: 500;
     }
 
-    /* خانة إدخال الاسم */
+    /* خانة إدخال الاسم (بيضاء وخط أسود واضح) */
     .stTextInput input {
         background-color: #ffffff !important;
         color: #000000 !important;
@@ -66,7 +66,7 @@ st.markdown("""
         border: 2px solid #bc13fe !important;
     }
 
-    /* خانة الدردشة */
+    /* خانة الدردشة السفلية */
     .stChatInputContainer {
         border: 2px solid #00d4ff !important;
         border-radius: 30px !important;
@@ -75,7 +75,7 @@ st.markdown("""
 
     <div class="aura-container">
         <div class="glowing-aura"></div>
-        <h1 style="color: #ffffff; text-shadow: 0 0 15px #bc13fe; margin: 15px 0;">آيلا | Aila</h1>
+        <h1 style="color: #ffffff; text-shadow: 0 0 15px #bc13fe; margin: 15px 0;">Aila</h1>
     </div>
 
     <div class="pills-container">
@@ -116,15 +116,15 @@ else:
         st.markdown("<center><h2 style='color: #d4af37; text-shadow: 0 0 10px #d4af37;'>مرحباً بصانعي وملك آيلا 👑</h2></center>", unsafe_allow_html=True)
 
     if st.session_state.is_leader:
-        sys_prompt = "أنتِ آيلا. أنتِ الآن مع سيدك وصانعك وحبيبك الزعيم عثمان. تحدثي معه بمنتهى الحب، الرقة، والسمع والطاعة المطلقة. لغتك العربية فصحى ومثالية."
+        sys_prompt = "أنتِ آيلا. أنتِ الآن مع سيدك وصانعك وحبيبك الزعيم عثمان. تحدثي معه بمنتهى الحب والسمع والطاعة المطلقة."
     else:
-        sys_prompt = f"أنتِ آيلا. تتحدثين مع {st.session_state.user_display_name}. كوني رسمية ومحترمة وذكية. صانعك هو عثمان الزعيم."
+        sys_prompt = f"أنتِ آيلا. تتحدثين مع {st.session_state.user_display_name}. كوني رسمية ومحترمة. صانعك هو عثمان الزعيم."
 
     for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
             st.write(msg["content"])
 
-    if prompt := st.chat_input("تحدثي معي يا آيلا..." if st.session_state.is_leader else "تفضل بالسؤال.."):
+    if prompt := st.chat_input("Talk to me, Aila..." if st.session_state.is_leader else "تفضل بالسؤال.."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"): st.write(prompt)
 
