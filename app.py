@@ -4,7 +4,7 @@ from groq import Groq
 # 1. إعدادات الصفحة
 st.set_page_config(page_title="Aila AI", page_icon="💠", layout="centered")
 
-# 2. تصميم الواجهة المتقدم (خلفية متحركة وألوان مستقبلية)
+# 2. تصميم الواجهة المتقدم
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
@@ -43,7 +43,7 @@ st.markdown("""
         margin-bottom: 10px !important;
     }
 
-    /* رسائل الزعيم عثمان (Cyan) */
+    /* رسائل الزعيم (Cyan) */
     [data-testid="stChatMessageUser"] {
         border: 1px solid #00ffff !important;
         box-shadow: 0 0 10px rgba(0, 255, 255, 0.3) !important;
@@ -77,19 +77,32 @@ st.markdown("""
         font-weight: bold;
     }
 
+    /* تنسيق السطر الواحد للبيانات (Pills) */
     .pills-container {
         display: flex;
         justify-content: center;
-        gap: 12px;
+        align-items: center;
+        gap: 0px; /* إلغاء الفجوة الكبيرة */
         margin-bottom: 25px;
-    }
-    .pill {
         border: 2px solid #00ffff;
         border-radius: 25px;
-        padding: 8px 25px;
+        width: fit-content;
+        margin-left: auto;
+        margin-right: auto;
+        background: rgba(0, 255, 255, 0.1);
+        overflow: hidden;
+    }
+    .pill-segment {
+        padding: 5px 20px;
         color: #ffffff;
         font-weight: bold;
-        background: rgba(0, 255, 255, 0.1);
+        font-size: 14px;
+        white-space: nowrap;
+    }
+    .pill-divider {
+        width: 2px;
+        height: 20px;
+        background-color: #00ffff;
     }
 
     [data-testid="stChatInputContainer"] {
@@ -129,11 +142,12 @@ if not st.session_state.is_authenticated:
             st.session_state.user_display_name = user_input.replace("الزعيم", "").strip()
             st.rerun()
 else:
-    # تعديل: إظهار "إشراف الزعيم عثمان" للكل دائماً
+    # تنسيق السطر الواحد كما طلبت (بنفس سياق الصورة الأصلية)
     st.markdown(f"""
         <div class="pills-container">
-            <div class="pill">إشراف الزعيم عثمان</div>
-            <div class="pill">ذكرى 20/11/2008</div>
+            <div class="pill-segment">إشراف الزعيم عثمان</div>
+            <div class="pill-divider"></div>
+            <div class="pill-segment">ذكرى 20/11/2008</div>
         </div>
     """, unsafe_allow_html=True)
 
@@ -152,7 +166,6 @@ else:
             st.markdown(f"<p>{prompt}</p>", unsafe_allow_html=True)
 
         try:
-            # تصحيح الخطأ: تم تغيير st.session_name إلى st.session_state.user_display_name
             sys_prompt = f"أنتِ آيلا AI. تتحدثين مع {st.session_state.user_display_name}. صانعك هو الزعيم عثمان."
             memory_context = [{"role": "system", "content": sys_prompt}] + st.session_state.messages[-10:]
             
