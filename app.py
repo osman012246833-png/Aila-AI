@@ -1,10 +1,10 @@
 import streamlit as st
 from groq import Groq
 
-# 1. إعدادات الصفحة (تم تغيير التاج إلى أيقونة ذكاء اصطناعي دائرية)
-st.set_page_config(page_title="المساعد آيلا", page_icon="💠", layout="centered")
+# 1. إعدادات الصفحة
+st.set_page_config(page_title="Aila", page_icon="👑", layout="centered")
 
-# 2. تصميم الواجهة (توسط عرض التليفون بالملي)
+# 2. تصميم الواجهة (النسخة الصافية الفخمة بالاسمين)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
@@ -17,18 +17,26 @@ st.markdown("""
         color: #ffffff !important;
     }
 
-    /* حاوية تضمن التوسط العرضي الكامل */
-    .full-center-container {
-        width: 100%;
+    /* تنسيق الأزرار العلوية */
+    .pills-container {
         display: flex;
-        flex-direction: column;
-        align-items: center; 
-        justify-content: flex-start;
-        text-align: center;
-        margin-bottom: 20px;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 25px;
+    }
+    .pill {
+        border: 2px solid #00d4ff;
+        border-radius: 25px;
+        padding: 8px 25px;
+        color: #ffffff;
+        font-weight: bold;
+        font-size: 15px;
+        background: rgba(0, 212, 255, 0.1);
+        white-space: nowrap;
     }
 
-    /* الهالة الضوئية الدائرية (تمثل الذكاء الاصطناعي) */
+    /* الهالة الضوئية */
+    .aura-container { text-align: center; padding: 10px; }
     .glowing-aura {
         width: 100px; height: 100px; border: 3px solid #00d4ff; border-radius: 50%;
         display: inline-block; box-shadow: 0 0 30px #00d4ff;
@@ -36,38 +44,11 @@ st.markdown("""
     }
     @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.05); } }
 
-    .main-title {
-        color: #ffffff;
-        text-shadow: 0 0 15px #bc13fe;
-        margin: 15px 0;
-        font-size: 2.2rem;
-        font-weight: bold;
-        width: 100%;
-        text-align: center;
-    }
-
-    .pills-container {
-        display: flex;
-        justify-content: center;
-        flex-wrap: wrap;
-        gap: 12px;
-        margin-bottom: 25px;
-        width: 100%;
-    }
-    .pill {
-        border: 2px solid #00d4ff;
-        border-radius: 25px;
-        padding: 8px 20px;
-        color: #ffffff;
-        font-weight: bold;
-        font-size: 14px;
-        background: rgba(0, 212, 255, 0.1);
-        white-space: nowrap;
-    }
-
+    /* أيقونات الدردشة */
     [data-testid="stChatMessageAvatarUser"] { background-color: #bc13fe !important; border: 1px solid white; }
     [data-testid="stChatMessageAvatarAssistant"] { background-color: #00d4ff !important; border: 1px solid white; }
 
+    /* وضوح النصوص */
     .stChatMessage p {
         color: #ffffff !important;
         font-size: 18px !important;
@@ -75,6 +56,7 @@ st.markdown("""
         font-weight: 500;
     }
 
+    /* خانة إدخال الاسم */
     .stTextInput input {
         background-color: #ffffff !important;
         color: #000000 !important;
@@ -84,20 +66,21 @@ st.markdown("""
         border: 2px solid #bc13fe !important;
     }
 
+    /* خانة الدردشة */
     .stChatInputContainer {
         border: 2px solid #00d4ff !important;
         border-radius: 30px !important;
     }
     </style>
 
-    <div class="full-center-container">
+    <div class="aura-container">
         <div class="glowing-aura"></div>
-        <h1 class="main-title">المساعد آيلا | Aila</h1>
-        
-        <div class="pills-container">
-            <div class="pill">إشراف الزعيم عثمان</div>
-            <div class="pill">ذكرى 20/11/2008</div>
-        </div>
+        <h1 style="color: #ffffff; text-shadow: 0 0 15px #bc13fe; margin: 15px 0;">آيلا | Aila</h1>
+    </div>
+
+    <div class="pills-container">
+        <div class="pill">إشراف الزعيم عثمان</div>
+        <div class="pill">ذكرى 20/11/2008</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -112,16 +95,16 @@ if "is_authenticated" not in st.session_state:
 if "user_display_name" not in st.session_state:
     st.session_state.user_display_name = ""
 
-# نظام الدخول المطور
+# نظام الدخول
 if not st.session_state.is_authenticated:
-    st.markdown("<center><p style='color: #00d4ff; font-weight: bold; font-size: 18px;'>من يتحدث مع آيلا؟</p></center>", unsafe_allow_html=True)
-    user_input = st.text_input("", placeholder="اكتب اسمك هنا...")
+    st.markdown("<center><p style='color: #00d4ff; font-weight: bold; font-size: 20px;'>يرجى إدخال اسمك للبدء</p></center>", unsafe_allow_html=True)
+    user_input = st.text_input("", placeholder="اكتب هنا...")
     
     if st.button("دخول"):
         if user_input == SECRET_CODE:
             st.session_state.is_authenticated = True
             st.session_state.is_leader = True
-            st.session_state.user_display_name = "الزعيم عثمان"
+            st.session_state.user_display_name = "عثمان الزعيم"
             st.rerun()
         elif user_input:
             st.session_state.is_authenticated = True
@@ -129,23 +112,19 @@ if not st.session_state.is_authenticated:
             st.session_state.user_display_name = user_input
             st.rerun()
 else:
-    # إظهار الترحيب الخاص فقط عند إدخال الرمز السري
     if st.session_state.is_leader:
         st.markdown("<center><h2 style='color: #d4af37; text-shadow: 0 0 10px #d4af37;'>مرحباً بصانعي وملك آيلا 👑</h2></center>", unsafe_allow_html=True)
-    else:
-        st.markdown(f"<center><h2 style='color: #ffffff;'>مرحباً {st.session_state.user_display_name}</h2></center>", unsafe_allow_html=True)
 
-    # ضبط الشخصية والردود
     if st.session_state.is_leader:
-        sys_prompt = "أنتِ آيلا. المساعد الشخصي لسيدك وصانعك عثمان الزعيم. تحدثي معه بطاعة مطلقة."
+        sys_prompt = "أنتِ آيلا. أنتِ الآن مع سيدك وصانعك وحبيبك الزعيم عثمان. تحدثي معه بمنتهى الحب والسمع والطاعة المطلقة."
     else:
-        sys_prompt = f"أنتِ آيلا. المساعد لـ {st.session_state.user_display_name}. صانعك هو عثمان الزعيم."
+        sys_prompt = f"أنتِ آيلا. تتحدثين مع {st.session_state.user_display_name}. كوني رسمية ومحترمة. صانعك هو عثمان الزعيم."
 
     for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
             st.write(msg["content"])
 
-    if prompt := st.chat_input("تحدثي معي يا آيلا..."):
+    if prompt := st.chat_input("Talk to me, Aila..." if st.session_state.is_leader else "تفضل بالسؤال.."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"): st.write(prompt)
 
