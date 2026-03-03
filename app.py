@@ -27,11 +27,10 @@ if prompt := st.chat_input("تحدثي مع آيلا..."):
     st.chat_message("user").write(prompt)
 
     try:
-        # تعديل لضمان إرسال البيانات بشكل صحيح
-        formatted_messages = [{"role": m["role"], "content": m["content"]} for m in st.session_state.messages]
+        # استخدام الموديل الجديد الموصى به
         response = client.chat.completions.create(
-            model="llama3-8b-8192",
-            messages=formatted_messages
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages]
         )
         answer = response.choices[0].message.content
         st.session_state.messages.append({"role": "assistant", "content": answer})
