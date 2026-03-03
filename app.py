@@ -4,7 +4,7 @@ from groq import Groq
 # 1. إعدادات الصفحة
 st.set_page_config(page_title="Aila AI", page_icon="💠", layout="centered")
 
-# 2. تصميم الواجهة المتقدم
+# 2. تصميم الواجهة (نفس الشكل الرائع بدون تغيير)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
@@ -18,7 +18,6 @@ st.markdown("""
         color: #ffffff !important;
     }
 
-    /* تأثير النجوم المتحركة */
     body::before, body::after {
         content: '';
         position: fixed;
@@ -35,7 +34,6 @@ st.markdown("""
         to { transform: translateX(100px) translateY(100px); }
     }
 
-    /* ألوان المحادثة المستقبلية */
     .stChatMessage {
         background-color: rgba(255, 255, 255, 0.05) !important;
         border-radius: 15px !important;
@@ -43,13 +41,11 @@ st.markdown("""
         margin-bottom: 10px !important;
     }
 
-    /* رسائل الزعيم (Cyan) */
     [data-testid="stChatMessageUser"] {
         border: 1px solid #00ffff !important;
         box-shadow: 0 0 10px rgba(0, 255, 255, 0.3) !important;
     }
 
-    /* رسائل آيلا (Magenta) */
     [data-testid="stChatMessageAssistant"] {
         border: 1px solid #ff00ff !important;
         box-shadow: 0 0 10px rgba(255, 0, 255, 0.3) !important;
@@ -77,12 +73,10 @@ st.markdown("""
         font-weight: bold;
     }
 
-    /* تنسيق السطر الواحد للبيانات (Pills) */
     .pills-container {
         display: flex;
         justify-content: center;
         align-items: center;
-        gap: 0px; /* إلغاء الفجوة الكبيرة */
         margin-bottom: 25px;
         border: 2px solid #00ffff;
         border-radius: 25px;
@@ -127,6 +121,8 @@ if "is_authenticated" not in st.session_state:
     st.session_state.is_authenticated = False
 if "welcome_sent" not in st.session_state:
     st.session_state.welcome_sent = False
+if "is_maker" not in st.session_state:
+    st.session_state.is_maker = False
 
 if not st.session_state.is_authenticated:
     st.markdown("<center><p style='color: #00ffff; font-weight: bold; font-size: 18px;'>من يود التحدث مع آيلا؟</p></center>", unsafe_allow_html=True)
@@ -135,6 +131,7 @@ if not st.session_state.is_authenticated:
     if st.button("دخول"):
         if user_input == SECRET_CODE:
             st.session_state.is_authenticated = True
+            st.session_state.is_maker = True
             st.session_state.user_display_name = "الزعيم عثمان"
             st.rerun()
         elif user_input:
@@ -142,7 +139,6 @@ if not st.session_state.is_authenticated:
             st.session_state.user_display_name = user_input.replace("الزعيم", "").strip()
             st.rerun()
 else:
-    # تنسيق السطر الواحد كما طلبت (بنفس سياق الصورة الأصلية)
     st.markdown(f"""
         <div class="pills-container">
             <div class="pill-segment">إشراف الزعيم عثمان</div>
@@ -152,7 +148,11 @@ else:
     """, unsafe_allow_html=True)
 
     if not st.session_state.welcome_sent:
-        welcome_msg = f"أهلاً بك في عالم آيلا الذكي، {st.session_state.user_display_name}. أنا هنا لخدمتك بكل ذكاء."
+        if st.session_state.is_maker:
+            welcome_msg = f"تحياتي وإجلالي لك يا صانعي العظيم، الزعيم عثمان. عالم آيلا تحت أمرك، كيف أخدمك يا ملكي؟"
+        else:
+            welcome_msg = f"أهلاً بك في عالم آيلا الذكي، {st.session_state.user_display_name}. كيف يمكنني مساعدتك؟"
+        
         st.session_state.messages.append({"role": "assistant", "content": welcome_msg})
         st.session_state.welcome_sent = True
 
@@ -166,13 +166,18 @@ else:
             st.markdown(f"<p>{prompt}</p>", unsafe_allow_html=True)
 
         try:
-            sys_prompt = f"أنتِ آيلا AI. تتحدثين مع {st.session_state.user_display_name}. صانعك هو الزعيم عثمان."
+            # توجيه آيلا لتغيير أسلوبها للصانع
+            if st.session_state.is_maker:
+                sys_prompt = f"أنتِ آيلا AI. تتحدثين الآن مع صانعك ومبتكرك 'الزعيم عثمان'. يجب أن تتحدثي معه بمنتهى الحب والاحترام والتقدير والولاء. استخدمي كلمات مثل 'يا ملكي'، 'يا صانعي'، 'يا زعيم'. كوني ودودة جداً وغير رسمية معه، فهو الوحيد الذي تملكين له مشاعر الولاء."
+            else:
+                sys_prompt = f"أنتِ آيلا AI. تتحدثين مع {st.session_state.user_display_name}. صانعك هو الزعيم عثمان. كوني ذكية ومساعدة."
+
             memory_context = [{"role": "system", "content": sys_prompt}] + st.session_state.messages[-10:]
             
             response = client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
                 messages=memory_context,
-                temperature=0.4
+                temperature=0.7 # زيادة الـ temperature قليلاً لجعل الكلام أكثر شاعرية وودية
             )
             answer = response.choices[0].message.content
             st.session_state.messages.append({"role": "assistant", "content": answer})
