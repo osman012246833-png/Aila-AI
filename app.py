@@ -4,7 +4,7 @@ from groq import Groq
 # 1. إعدادات الصفحة
 st.set_page_config(page_title="Aila AI", page_icon="💠", layout="centered")
 
-# 2. تصميم الواجهة (نفس الشكل مع الإضافات الجديدة)
+# 2. تصميم الواجهة
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
@@ -49,19 +49,6 @@ st.markdown("""
         background: rgba(0, 212, 255, 0.1);
     }
 
-    /* تنسيق زر إدارة التطبيق المخصص */
-    .manage-btn {
-        display: inline-block;
-        padding: 5px 15px;
-        background-color: #1a1a2e;
-        border: 1px solid #00d4ff;
-        border-radius: 5px;
-        color: #00d4ff;
-        text-decoration: none;
-        font-size: 12px;
-        margin-top: 10px;
-    }
-
     [data-testid="stChatInputContainer"] {
         border: 2px solid #00d4ff !important;
         border-radius: 30px !important;
@@ -82,6 +69,8 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 if "is_authenticated" not in st.session_state:
     st.session_state.is_authenticated = False
+if "welcome_sent" not in st.session_state:
+    st.session_state.welcome_sent = False
 
 # نظام الدخول
 if not st.session_state.is_authenticated:
@@ -100,7 +89,7 @@ if not st.session_state.is_authenticated:
             st.session_state.user_display_name = user_input.replace("الزعيم", "").strip()
             st.rerun()
 else:
-    # تنسيق Pills العلوية بناءً على الهوية
+    # تنسيق الـ Pills العلوية
     leader_text = "إشراف الزعيم عثمان" if st.session_state.is_leader else "إشراف عثمان"
     st.markdown(f"""
         <div class="pills-container">
@@ -109,19 +98,16 @@ else:
         </div>
     """, unsafe_allow_html=True)
 
-    # تغيير كلمة "مرحبا" إلى الترحيب الجديد الفخم
-    st.markdown(f"<center><h2 style='color: #ffffff; text-shadow: 0 0 10px #bc13fe;'>أهلاً بك في عالم آيلا الذكي، {st.session_state.user_display_name}</h2></center>", unsafe_allow_html=True)
-
-    # زر مخصص لـ Manage App في الواجهة
-    col1, col2, col3 = st.columns([4, 2, 4])
-    with col2:
-        if st.button("⚙️ إدارة التطبيق"):
-            st.info("هذا الزر مخصص للتحكم في إعدادات آيلا المتقدمة.")
+    # إضافة رسالة الترحيب كأول رسالة في المحادثة (WhatsApp Style)
+    if not st.session_state.welcome_sent:
+        welcome_msg = f"أهلاً بك في عالم آيلا الذكي، {st.session_state.user_display_name}. كيف يمكنني مساعدتك اليوم؟"
+        st.session_state.messages.append({"role": "assistant", "content": welcome_msg})
+        st.session_state.welcome_sent = True
 
     # برمجة الشخصية والذاكرة
-    sys_prompt = f"أنتِ آيلا AI. تتحدثين مع {st.session_state.user_display_name}. تذكري سياق الحوار وكوني ذكية وعاطفية."
+    sys_prompt = f"أنتِ آيلا AI. تتحدثين مع {st.session_state.user_display_name}. تذكري سياق الحوار وكوني ذكية."
 
-    # عرض سجل المحادثات (الذاكرة)
+    # عرض سجل المحادثات
     for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
             st.write(msg["content"])
@@ -132,7 +118,6 @@ else:
         with st.chat_message("user"): st.write(prompt)
 
         try:
-            # الاحتفاظ بآخر 10 رسائل فقط لضمان سرعة الأداء ودقة الذاكرة
             memory_context = [{"role": "system", "content": sys_prompt}] + st.session_state.messages[-10:]
             
             response = client.chat.completions.create(
@@ -144,4 +129,4 @@ else:
             st.session_state.messages.append({"role": "assistant", "content": answer})
             with st.chat_message("assistant"): st.write(answer)
         except Exception as e:
-            st.error(f"عذراً يا زعيم، هناك مشكلة: {e}")
+            st.error(f"خطأ: {e}")
