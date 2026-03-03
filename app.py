@@ -1,56 +1,143 @@
-# برنامج يطلب من المستخدم إدخال اسمه وطباعة رسالة ترحيبية
-اسم = input("من فضلك أدخل اسمك: ")
-print("مرحباً يا " + اسم)
+import streamlit as st
+from groq import Groq
 
-# برنامج يطلب من المستخدم إدخال رقمين وطباعة ناتج جمعهم
-رقم1 = float(input("من فضلك أدخل الرقم الأول: "))
-رقم2 = float(input("من فضلك أدخل الرقم الثاني: "))
-print("الناتج هو: " + str(رقم1 + رقم2))
+# 1. إعدادات الصفحة
+st.set_page_config(page_title="Aila Royale | الزعيم عثمان", page_icon="👑", layout="centered")
 
-# برنامج يطلب من المستخدم إدخال عمره وطباعة رسالة تتناسب مع العمر
-عمر = int(input("من فضلك أدخل عمرك: "))
-if عمر < 18:
-    print("مرحباً يا صغير")
-elif عمر < 65:
-    print("مرحباً يا بالغ")
+# 2. تصميم الواجهة (الدمج الفخم والوضوح التام)
+st.markdown("""
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+    
+    html, body, [class*="stApp"] {
+        font-family: 'Cairo', sans-serif;
+        direction: rtl;
+        text-align: right;
+        background: linear-gradient(135deg, #0f0c29 0%, #1a1a2e 50%, #0f0c29 100%) !important;
+        color: #ffffff !important;
+    }
+
+    /* تنسيق الأزرار العلوية */
+    .pills-container {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+    .pill {
+        border: 2px solid #00d4ff;
+        border-radius: 20px;
+        padding: 5px 20px;
+        color: #ffffff;
+        font-weight: bold;
+        font-size: 14px;
+        background: rgba(0, 212, 255, 0.1);
+    }
+
+    /* الهالة الضوئية */
+    .aura-container { text-align: center; padding: 10px; }
+    .glowing-aura {
+        width: 100px; height: 100px; border: 3px solid #00d4ff; border-radius: 50%;
+        display: inline-block; box-shadow: 0 0 30px #00d4ff;
+        animation: pulse 2s infinite alternate;
+    }
+    @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.05); } }
+
+    /* أيقونات الدردشة */
+    [data-testid="stChatMessageAvatarUser"] { background-color: #bc13fe !important; border: 1px solid white; }
+    [data-testid="stChatMessageAvatarAssistant"] { background-color: #00d4ff !important; border: 1px solid white; }
+
+    /* وضوح النصوص */
+    .stChatMessage p {
+        color: #ffffff !important;
+        font-size: 18px !important;
+        line-height: 1.6;
+        font-weight: 500;
+    }
+
+    /* خانة إدخال الاسم */
+    .stTextInput input {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        font-weight: bold !important;
+        font-size: 18px !important;
+        border-radius: 10px;
+    }
+
+    /* خانة الدردشة */
+    .stChatInputContainer {
+        border: 1px solid #00d4ff !important;
+        border-radius: 25px !important;
+    }
+    </style>
+
+    <div class="aura-container">
+        <div class="glowing-aura"></div>
+        <h1 style="color: #ffffff; text-shadow: 0 0 15px #bc13fe; margin: 10px 0;">آيلا | Aila</h1>
+    </div>
+
+    <div class="pills-container">
+        <div class="pill">بإشراف الزعيم عثمان 👑</div>
+        <div class="pill">ذكرى 20/11/2008 ♾️</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+# 3. محرك الذكاء
+client = Groq(api_key="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")
+SECRET_CODE = "osman 6/11/2008" 
+
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+if "is_authenticated" not in st.session_state:
+    st.session_state.is_authenticated = False
+if "user_display_name" not in st.session_state:
+    st.session_state.user_display_name = ""
+
+# نظام الدخول
+if not st.session_state.is_authenticated:
+    st.markdown("<center><p style='color: #00d4ff; font-weight: bold;'>يرجى إدخال اسمك للبدء</p></center>", unsafe_allow_html=True)
+    user_input = st.text_input("", placeholder="اكتب هنا...")
+    
+    if st.button("تأكيد"):
+        if user_input == SECRET_CODE:
+            st.session_state.is_authenticated = True
+            st.session_state.is_leader = True
+            st.session_state.user_display_name = "عثمان الزعيم"
+            st.rerun()
+        elif user_input:
+            st.session_state.is_authenticated = True
+            st.session_state.is_leader = False
+            st.session_state.user_display_name = user_input
+            st.rerun()
 else:
-    print("مرحباً يا كبير")
+    if st.session_state.is_leader:
+        st.markdown("<center><h2 style='color: #d4af37; text-shadow: 0 0 10px #d4af37;'>مرحباً بصانعي وملك آيلا 👑</h2></center>", unsafe_allow_html=True)
 
-# برنامج يطلب من المستخدم إدخال اسم المدينة التي يعيش فيها وطباعة رسالة تتناسب مع المدينة
-مدينة = input("من فضلك أدخل اسم المدينة التي تعيش فيها: ")
-if مدينة == "القاهرة":
-    print("مرحباً يا قاهري")
-elif مدينة == "الاسكندرية":
-    print("مرحباً يا اسكندراني")
-else:
-    print("مرحباً يا زائر")
+    # تعليمات آيلا (بدون كلمة الذكية)
+    if st.session_state.is_leader:
+        sys_prompt = "أنتِ آيلا. أنتِ الآن مع سيدك وصانعك وحبيبك الزعيم عثمان. تحدثي معه بمنتهى الحب، الرقة، والسمع والطاعة المطلقة. لغتك العربية فصحى ومثالية وبدون أخطاء."
+    else:
+        sys_prompt = f"أنتِ آيلا. تتحدثين مع {st.session_state.user_display_name}. كوني رسمية ومحترمة وذكية. صانعك هو عثمان الزعيم."
 
-# برنامج يطلب من المستخدم إدخال رقم الهاتف وطباعة رسالة تتناسب مع الرقم
-رقم_هاتف = input("من فضلك أدخل رقم هاتفك: ")
-if رقم_هاتف.startswith("01"):
-    print("مرحباً يا مستخدم موبايل")
-elif رقم_هاتف.startswith("02"):
-    print("مرحباً يا مستخدم أرضي")
-else:
-    print("مرحباً يا زائر")
+    for msg in st.session_state.messages:
+        with st.chat_message(msg["role"]):
+            st.write(msg["content"])
 
-# برنامج يطلب من المستخدم إدخال كلمة سر وطباعة رسالة تتناسب مع الكلمة
-كلمة_سر = input("من فضلك أدخل كلمة سر: ")
-if كلمة_سر == "عثمان":
-    print("مرحباً يا سيدي")
-else:
-    print("كلمة سر خاطئة")
+    if prompt := st.chat_input("تحدثي معي يا آيلا..." if st.session_state.is_leader else "تفضل بالسؤال.."):
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user"): st.write(prompt)
 
-# برنامج يطلب من المستخدم إدخال تاريخ الميلاد وطباعة رسالة تتناسب مع التاريخ
-تاريخ_ميلاد = input("من فضلك أدخل تاريخ ميلادك: ")
-if تاريخ_ميلاد == "1990-01-01":
-    print("مرحباً يا عثمان")
-else:
-    print("تاريخ ميلاد خاطئ")
-
-# برنامج يطلب من المستخدم إدخال البريد الإلكتروني وطباعة رسالة تتناسب مع البريد
-بريد_إلكتروني = input("من فضلك أدخل بريدك الإلكتروني: ")
-if بريد_إلكتروني == "osman@gmail.com":
-    print("مرحباً يا عثمان")
-else:
-    print("بريد إلكتروني خاطئ")
+        try:
+            full_history = [{"role": "system", "content": sys_prompt}] + \
+                           [{"role": m["role"], "content": m["content"]} for m in st.session_state.messages]
+            
+            response = client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=full_history,
+                temperature=0.3
+            )
+            answer = response.choices[0].message.content
+            st.session_state.messages.append({"role": "assistant", "content": answer})
+            with st.chat_message("assistant"): st.write(answer)
+        except Exception as e:
+            st.error(f"حدث خطأ: {e}")
