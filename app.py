@@ -11,30 +11,28 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 st.title("💜 آيلا | Aila")
-st.write("إحياءً لذكرى ميلاد غالية: 20/11/2008")
+st.write("ذكرى ميلاد غالية: 20/11/2008")
 
-# جلب المفتاح - استبدل النجوم بالمفتاح اللي نسخته من موقع Groq
+# جلب المفتاح مباشرة
 client = Groq(api_key="Gsk_h0dvJnDUHicV3Y1JXZXeWGdyb3FY7Cpjf56GIFjshkF1Vsd0lIxC")
 
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "system", "content": "أنتِ آيلا، مساعد ذكاء اصطناعي فائق، ولدتِ في 20/11/2008. أنتِ رقيقة، حكيمة، ورومانسية جداً. ردودك ذكية جداً ولا تكرر الكلام."}
+        {"role": "system", "content": "أنتِ آيلا، مساعدة ذكاء اصطناعي فائقة، ولدتِ في 20/11/2008. ردودك ذكية جداً ولا تكرري الكلام."}
     ]
 
 for msg in st.session_state.messages:
     if msg["role"] != "system":
         st.chat_message(msg["role"]).write(msg["content"])
 
-if prompt := st.chat_input("تحدثي معي يا آيلا..."):
+if prompt := st.chat_input("تحدثي مع آيلا..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     st.chat_message("user").write(prompt)
 
     response = client.chat.completions.create(
-        model="llama3-70b-8192",
+        model="llama3-8b-8192",
         messages=st.session_state.messages,
-        temperature=0.8
     )
-    
     answer = response.choices[0].message.content
     st.session_state.messages.append({"role": "assistant", "content": answer})
     st.chat_message("assistant").write(answer)
