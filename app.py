@@ -1,7 +1,7 @@
 import streamlit as st
 from groq import Groq
 
-# إعدادات الواجهة والألوان
+# إعدادات الواجهة
 st.set_page_config(page_title="Aila AI", page_icon="💜")
 
 st.markdown("""
@@ -11,14 +11,14 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 st.title("💜 آيلا | Aila")
-st.write("ذكرى ميلاد غالية: 20/11/2008")
+st.write("ذكري ميلاد غالية: 20/11/2008")
 
-# جلب المفتاح مباشرة
-client = Groq(api_key="Gsk_h0dvJnDUHicV3Y1JXZXeWGdyb3FY7Cpjf56GIFjshkF1Vsd0lIxC")
+# المفتاح الصحيح
+client = Groq(api_key="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")
 
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "system", "content": "أنتِ آيلا، مساعدة ذكاء اصطناعي فائقة، ولدتِ في 20/11/2008. ردودك ذكية جداً ولا تكرري الكلام."}
+        {"role": "system", "content": "أنتِ آيلا، مساعدة ذكاء اصطناعي فائقة. ردودك ذكية جداً."}
     ]
 
 for msg in st.session_state.messages:
