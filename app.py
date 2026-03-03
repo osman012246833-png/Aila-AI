@@ -1,10 +1,10 @@
 import streamlit as st
 from groq import Groq
 
-# 1. إعدادات الصفحة (الاسم الجديد والأيقونة المميزة)
+# 1. إعدادات الصفحة
 st.set_page_config(page_title="Aila", page_icon="👑", layout="centered")
 
-# 2. تصميم الواجهة (النسخة الصافية الفخمة)
+# 2. تصميم الواجهة (النسخة الصافية الفخمة بالاسمين)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
@@ -17,7 +17,7 @@ st.markdown("""
         color: #ffffff !important;
     }
 
-    /* تنسيق الأزرار العلوية الصافية */
+    /* تنسيق الأزرار العلوية */
     .pills-container {
         display: flex;
         justify-content: center;
@@ -35,7 +35,7 @@ st.markdown("""
         white-space: nowrap;
     }
 
-    /* الهالة الضوئية الثابتة */
+    /* الهالة الضوئية */
     .aura-container { text-align: center; padding: 10px; }
     .glowing-aura {
         width: 100px; height: 100px; border: 3px solid #00d4ff; border-radius: 50%;
@@ -48,7 +48,7 @@ st.markdown("""
     [data-testid="stChatMessageAvatarUser"] { background-color: #bc13fe !important; border: 1px solid white; }
     [data-testid="stChatMessageAvatarAssistant"] { background-color: #00d4ff !important; border: 1px solid white; }
 
-    /* وضوح النصوص في الدردشة */
+    /* وضوح النصوص */
     .stChatMessage p {
         color: #ffffff !important;
         font-size: 18px !important;
@@ -56,7 +56,7 @@ st.markdown("""
         font-weight: 500;
     }
 
-    /* خانة إدخال الاسم (بيضاء وخط أسود واضح) */
+    /* خانة إدخال الاسم */
     .stTextInput input {
         background-color: #ffffff !important;
         color: #000000 !important;
@@ -66,7 +66,7 @@ st.markdown("""
         border: 2px solid #bc13fe !important;
     }
 
-    /* خانة الدردشة السفلية */
+    /* خانة الدردشة */
     .stChatInputContainer {
         border: 2px solid #00d4ff !important;
         border-radius: 30px !important;
@@ -75,7 +75,7 @@ st.markdown("""
 
     <div class="aura-container">
         <div class="glowing-aura"></div>
-        <h1 style="color: #ffffff; text-shadow: 0 0 15px #bc13fe; margin: 15px 0;">Aila</h1>
+        <h1 style="color: #ffffff; text-shadow: 0 0 15px #bc13fe; margin: 15px 0;">آيلا | Aila</h1>
     </div>
 
     <div class="pills-container">
