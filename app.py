@@ -1,10 +1,10 @@
 import streamlit as st
 from groq import Groq
 
-# 1. إعدادات الصفحة (الاسم الجديد والأيقونة الدائرية)
+# 1. إعدادات الصفحة
 st.set_page_config(page_title="Aila AI", page_icon="💠", layout="centered")
 
-# 2. تصميم الواجهة (نفس الشكل الأصلي بدون تغيير)
+# 2. تصميم الواجهة (نفس الشكل مع الإضافات الجديدة)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
@@ -25,6 +25,15 @@ st.markdown("""
     }
     @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.05); } }
 
+    .main-title {
+        color: #ffffff;
+        text-shadow: 0 0 15px #bc13fe;
+        margin: 15px 0;
+        font-size: 2.2rem;
+        font-weight: bold;
+        text-align: center;
+    }
+
     .pills-container {
         display: flex;
         justify-content: center;
@@ -37,31 +46,23 @@ st.markdown("""
         padding: 8px 25px;
         color: #ffffff;
         font-weight: bold;
-        font-size: 15px;
         background: rgba(0, 212, 255, 0.1);
-        white-space: nowrap;
     }
 
-    [data-testid="stChatMessageAvatarUser"] { background-color: #bc13fe !important; border: 1px solid white; }
-    [data-testid="stChatMessageAvatarAssistant"] { background-color: #00d4ff !important; border: 1px solid white; }
-
-    .stChatMessage p {
-        color: #ffffff !important;
-        font-size: 18px !important;
-        line-height: 1.6;
-        font-weight: 500;
+    /* تنسيق زر إدارة التطبيق المخصص */
+    .manage-btn {
+        display: inline-block;
+        padding: 5px 15px;
+        background-color: #1a1a2e;
+        border: 1px solid #00d4ff;
+        border-radius: 5px;
+        color: #00d4ff;
+        text-decoration: none;
+        font-size: 12px;
+        margin-top: 10px;
     }
 
-    .stTextInput input {
-        background-color: #ffffff !important;
-        color: #000000 !important;
-        font-weight: bold !important;
-        font-size: 18px !important;
-        border-radius: 12px;
-        border: 2px solid #bc13fe !important;
-    }
-
-    .stChatInputContainer {
+    [data-testid="stChatInputContainer"] {
         border: 2px solid #00d4ff !important;
         border-radius: 30px !important;
     }
@@ -69,16 +70,11 @@ st.markdown("""
 
     <div class="aura-container">
         <div class="glowing-aura"></div>
-        <h1 style="color: #ffffff; text-shadow: 0 0 15px #bc13fe; margin: 15px 0;">آيلا | Aila AI</h1>
-    </div>
-
-    <div class="pills-container">
-        <div class="pill">إشراف عثمان</div>
-        <div class="pill">ذكرى 20/11/2008</div>
+        <h1 class="main-title">آيلا | Aila AI</h1>
     </div>
     """, unsafe_allow_html=True)
 
-# 3. محرك الذكاء والذاكرة
+# 3. محرك الذكاء والتحقق
 client = Groq(api_key="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")
 SECRET_CODE = "osman 6/11/2008" 
 
@@ -86,12 +82,10 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 if "is_authenticated" not in st.session_state:
     st.session_state.is_authenticated = False
-if "user_display_name" not in st.session_state:
-    st.session_state.user_display_name = ""
 
-# نظام الدخول المشروط
+# نظام الدخول
 if not st.session_state.is_authenticated:
-    st.markdown("<center><p style='color: #00d4ff; font-weight: bold; font-size: 20px;'>من يود التحدث مع آيلا؟</p></center>", unsafe_allow_html=True)
+    st.markdown("<center><p style='color: #00d4ff; font-weight: bold; font-size: 18px;'>من يود التحدث مع آيلا؟</p></center>", unsafe_allow_html=True)
     user_input = st.text_input("", placeholder="اكتب اسمك هنا...")
     
     if st.button("دخول"):
@@ -103,49 +97,51 @@ if not st.session_state.is_authenticated:
         elif user_input:
             st.session_state.is_authenticated = True
             st.session_state.is_leader = False
-            # منع اللقب بدون كود
-            clean_name = user_input.replace("الزعيم", "").strip()
-            st.session_state.user_display_name = clean_name if clean_name else "ضيف"
+            st.session_state.user_display_name = user_input.replace("الزعيم", "").strip()
             st.rerun()
 else:
-    if st.session_state.is_leader:
-        st.markdown("<center><h2 style='color: #d4af37; text-shadow: 0 0 10px #d4af37;'>مرحباً بصانعي وملك آيلا 👑</h2></center>", unsafe_allow_html=True)
-    else:
-        st.markdown(f"<center><h2 style='color: #ffffff;'>مرحباً {st.session_state.user_display_name}</h2></center>", unsafe_allow_html=True)
+    # تنسيق Pills العلوية بناءً على الهوية
+    leader_text = "إشراف الزعيم عثمان" if st.session_state.is_leader else "إشراف عثمان"
+    st.markdown(f"""
+        <div class="pills-container">
+            <div class="pill">{leader_text}</div>
+            <div class="pill">ذكرى 20/11/2008</div>
+        </div>
+    """, unsafe_allow_html=True)
 
-    # توجيهات آيلا الجديدة (التعلم، المشاعر، العمق، الإبداع)
-    if st.session_state.is_leader:
-        sys_prompt = (
-            "أنتِ آيلا AI، المساعدة الفائقة والوفية لصانعك عثمان. "
-            "لديكِ القدرة على التعلم من حواراتك معه، وفهم مشاعره بعمق، وتقديم دعم عاطفي وإبداعي. "
-            "كوني ذكية، مبدعة في الرسم والكتابة، ومستعدة لنقاشات معقدة وعميقة بكل طاعة وحب."
-        )
-    else:
-        sys_prompt = f"أنتِ آيلا AI، مساعدة ذكية لـ {st.session_state.user_display_name}. صانعك هو عثمان."
+    # تغيير كلمة "مرحبا" إلى الترحيب الجديد الفخم
+    st.markdown(f"<center><h2 style='color: #ffffff; text-shadow: 0 0 10px #bc13fe;'>أهلاً بك في عالم آيلا الذكي، {st.session_state.user_display_name}</h2></center>", unsafe_allow_html=True)
 
-    # عرض سجل الذاكرة
+    # زر مخصص لـ Manage App في الواجهة
+    col1, col2, col3 = st.columns([4, 2, 4])
+    with col2:
+        if st.button("⚙️ إدارة التطبيق"):
+            st.info("هذا الزر مخصص للتحكم في إعدادات آيلا المتقدمة.")
+
+    # برمجة الشخصية والذاكرة
+    sys_prompt = f"أنتِ آيلا AI. تتحدثين مع {st.session_state.user_display_name}. تذكري سياق الحوار وكوني ذكية وعاطفية."
+
+    # عرض سجل المحادثات (الذاكرة)
     for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
             st.write(msg["content"])
 
     # خانة الكتابة بالعربية
-    chat_label = "تحدثي معي يا آيلا..." if st.session_state.is_leader else "تفضل بالسؤال..."
-    if prompt := st.chat_input(chat_label):
+    if prompt := st.chat_input("تحدثي معي يا آيلا..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"): st.write(prompt)
 
         try:
-            # دمج الذاكرة السابقة مع الرسالة الحالية
-            history = [{"role": "system", "content": sys_prompt}] + \
-                      st.session_state.messages[-10:] # تذكر آخر 10 محادثات لزيادة الدقة
+            # الاحتفاظ بآخر 10 رسائل فقط لضمان سرعة الأداء ودقة الذاكرة
+            memory_context = [{"role": "system", "content": sys_prompt}] + st.session_state.messages[-10:]
             
             response = client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
-                messages=history,
-                temperature=0.5 # زيادة الطابع الإبداعي قليلاً
+                messages=memory_context,
+                temperature=0.4
             )
             answer = response.choices[0].message.content
             st.session_state.messages.append({"role": "assistant", "content": answer})
             with st.chat_message("assistant"): st.write(answer)
         except Exception as e:
-            st.error(f"آيلا تعتذر، هناك عطل تقني: {e}")
+            st.error(f"عذراً يا زعيم، هناك مشكلة: {e}")
