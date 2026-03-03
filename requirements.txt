@@ -3,3 +3,4 @@ groq
 gTTS
 pytz
 streamlit-mic-recorder
+requests
