@@ -9,73 +9,58 @@ st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
     
-    /* الخلفية المتحركة (نجوم متلألئة) */
     html, body, [class*="stApp"] {
         font-family: 'Cairo', sans-serif;
         direction: rtl;
         text-align: right;
-        background: #000; /* خلفية سوداء أساسية */
-        overflow-x: hidden; /* لمنع ظهور شريط التمرير الأفقي */
+        background: #000;
+        overflow-x: hidden;
         color: #ffffff !important;
     }
 
-    /* تأثير النجوم المتلألئة */
+    /* تأثير النجوم المتحركة */
     body::before, body::after {
         content: '';
         position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        animation: animateBackground 50s linear infinite; /* سرعة حركة الخلفية */
-        z-index: -1; /* يضمن أن تكون الخلفية وراء المحتوى */
+        top: 0; left: 0; width: 100%; height: 100%;
+        animation: animateBackground 50s linear infinite;
+        z-index: -1;
     }
-
     body::before {
         background: url('https://www.transparenttextures.com/patterns/stardust.png') repeat;
         opacity: 0.3;
     }
-
-    body::after {
-        background: url('https://www.transparenttextures.com/patterns/dark-matter.png') repeat;
-        opacity: 0.2;
-        animation-delay: -25s; /* لجعل الطبقتين تتحركان بشكل مختلف */
-    }
-
     @keyframes animateBackground {
         from { transform: translateX(0) translateY(0); }
-        to { transform: translateX(100px) translateY(100px); } /* حركة خفيفة للخلفية */
+        to { transform: translateX(100px) translateY(100px); }
     }
 
-    /* تحسين وضوح نصوص الدردشة */
+    /* ألوان المحادثة المستقبلية */
     .stChatMessage {
         background-color: rgba(255, 255, 255, 0.05) !important;
         border-radius: 15px !important;
         padding: 10px !important;
         margin-bottom: 10px !important;
-        border: 1px solid rgba(0, 212, 255, 0.2) !important;
     }
 
-    /* رسائل المستخدم (ألوان ذكية - Cyan) */
+    /* رسائل الزعيم عثمان (Cyan) */
     [data-testid="stChatMessageUser"] {
-        border: 1px solid #00ffff !important; /* Cyan */
+        border: 1px solid #00ffff !important;
         box-shadow: 0 0 10px rgba(0, 255, 255, 0.3) !important;
     }
 
-    /* رسائل آيلا (ألوان ذكية - Magenta) */
+    /* رسائل آيلا (Magenta) */
     [data-testid="stChatMessageAssistant"] {
-        border: 1px solid #ff00ff !important; /* Magenta */
+        border: 1px solid #ff00ff !important;
         box-shadow: 0 0 10px rgba(255, 0, 255, 0.3) !important;
     }
 
     .stChatMessage p {
         color: #ffffff !important;
         font-size: 18px !important;
-        font-weight: 500 !important;
-        text-shadow: 1px 1px 3px #000000; /* ظل أقوى لزيادة الوضوح */
+        text-shadow: 1px 1px 3px #000000;
     }
 
-    /* الهالة والتاج */
     .aura-container { text-align: center; padding: 10px; }
     .glowing-aura {
         width: 100px; height: 100px; border: 3px solid #00d4ff; border-radius: 50%;
@@ -86,7 +71,7 @@ st.markdown("""
 
     .main-title {
         color: #ffffff;
-        text-shadow: 0 0 20px #ff00ff; /* تأثير ضوئي يتناسق مع ألوان آيلا */
+        text-shadow: 0 0 20px #ff00ff;
         margin: 15px 0;
         font-size: 2.5rem;
         font-weight: bold;
@@ -99,7 +84,7 @@ st.markdown("""
         margin-bottom: 25px;
     }
     .pill {
-        border: 2px solid #00ffff; /* لون Cyan يتناسق مع رسائل المستخدم */
+        border: 2px solid #00ffff;
         border-radius: 25px;
         padding: 8px 25px;
         color: #ffffff;
@@ -107,10 +92,9 @@ st.markdown("""
         background: rgba(0, 255, 255, 0.1);
     }
 
-    /* تحسين خانة الإدخال */
     [data-testid="stChatInputContainer"] {
-        border: 2px solid #ff00ff !important; /* لون Magenta يتناسق مع رسائل آيلا */
-        background-color: rgba(0, 0, 0, 0.7) !important; /* خلفية شفافة وداكنة */
+        border: 2px solid #ff00ff !important;
+        background-color: rgba(0, 0, 0, 0.7) !important;
     }
     </style>
 
@@ -131,7 +115,6 @@ if "is_authenticated" not in st.session_state:
 if "welcome_sent" not in st.session_state:
     st.session_state.welcome_sent = False
 
-# نظام الدخول
 if not st.session_state.is_authenticated:
     st.markdown("<center><p style='color: #00ffff; font-weight: bold; font-size: 18px;'>من يود التحدث مع آيلا؟</p></center>", unsafe_allow_html=True)
     user_input = st.text_input("", placeholder="اكتب اسمك هنا...")
@@ -139,43 +122,38 @@ if not st.session_state.is_authenticated:
     if st.button("دخول"):
         if user_input == SECRET_CODE:
             st.session_state.is_authenticated = True
-            st.session_state.is_leader = True
             st.session_state.user_display_name = "الزعيم عثمان"
             st.rerun()
         elif user_input:
             st.session_state.is_authenticated = True
-            st.session_state.is_leader = False
             st.session_state.user_display_name = user_input.replace("الزعيم", "").strip()
             st.rerun()
 else:
-    # تنسيق الـ Pills العلوية (الزعيم عثمان فقط بالكود السري)
-    leader_text = "إشراف الزعيم عثمان" if st.session_state.is_leader else "إشراف عثمان"
+    # تعديل: إظهار "إشراف الزعيم عثمان" للكل دائماً
     st.markdown(f"""
         <div class="pills-container">
-            <div class="pill">{leader_text}</div>
+            <div class="pill">إشراف الزعيم عثمان</div>
             <div class="pill">ذكرى 20/11/2008</div>
         </div>
     """, unsafe_allow_html=True)
 
-    # رسالة ترحيب WhatsApp Style
     if not st.session_state.welcome_sent:
         welcome_msg = f"أهلاً بك في عالم آيلا الذكي، {st.session_state.user_display_name}. أنا هنا لخدمتك بكل ذكاء."
         st.session_state.messages.append({"role": "assistant", "content": welcome_msg})
         st.session_state.welcome_sent = True
 
-    # عرض سجل المحادثات بالألوان الجديدة
     for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
             st.markdown(f"<p>{msg['content']}</p>", unsafe_allow_html=True)
 
-    # خانة الكتابة
     if prompt := st.chat_input("تحدثي معي يا آيلا..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(f"<p>{prompt}</p>", unsafe_allow_html=True)
 
         try:
-            sys_prompt = f"أنتِ آيلا AI. تتحدثين مع {st.session_name}. تذكري سياق الحوار وكوني ذكية جداً."
+            # تصحيح الخطأ: تم تغيير st.session_name إلى st.session_state.user_display_name
+            sys_prompt = f"أنتِ آيلا AI. تتحدثين مع {st.session_state.user_display_name}. صانعك هو الزعيم عثمان."
             memory_context = [{"role": "system", "content": sys_prompt}] + st.session_state.messages[-10:]
             
             response = client.chat.completions.create(
