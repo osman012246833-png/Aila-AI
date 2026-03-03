@@ -1,10 +1,10 @@
 import streamlit as st
 from groq import Groq
 
-# 1. إعدادات الصفحة (أيقونة ذكاء اصطناعي دائرية واسم التطبيق)
+# 1. إعدادات الصفحة (أيقونة الذكاء الاصطناعي الدائرية)
 st.set_page_config(page_title="المساعد آيلا", page_icon="💠", layout="centered")
 
-# 2. تصميم الواجهة
+# 2. تصميم الواجهة (توسط كامل وتنسيق فخم)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
@@ -17,7 +17,7 @@ st.markdown("""
         color: #ffffff !important;
     }
 
-    /* حاوية تضمن التوسط العرضي الكامل بالملي */
+    /* حاوية التوسط العرضي بالملي */
     .full-center-container {
         width: 100%;
         display: flex;
@@ -83,6 +83,7 @@ st.markdown("""
         border: 2px solid #bc13fe !important;
     }
 
+    /* خانة الدردشة السفلية */
     .stChatInputContainer {
         border: 2px solid #00d4ff !important;
         border-radius: 30px !important;
@@ -111,7 +112,7 @@ if "is_authenticated" not in st.session_state:
 if "user_display_name" not in st.session_state:
     st.session_state.user_display_name = ""
 
-# نظام الدخول المشروط
+# نظام الدخول الآمن
 if not st.session_state.is_authenticated:
     st.markdown("<center><p style='color: #00d4ff; font-weight: bold; font-size: 18px;'>من يتحدث مع آيلا؟</p></center>", unsafe_allow_html=True)
     user_input = st.text_input("", placeholder="اكتب اسمك هنا...")
@@ -125,29 +126,30 @@ if not st.session_state.is_authenticated:
         elif user_input:
             st.session_state.is_authenticated = True
             st.session_state.is_leader = False
-            # منع لقب الزعيم حتى لو كتب المستخدم اسم عثمان يدوياً
-            st.session_state.user_display_name = user_input.replace("الزعيم", "").strip()
+            # إزالة أي لقب يدوي لمنع التزييف
+            name_clean = user_input.replace("الزعيم", "").strip()
+            st.session_state.user_display_name = name_clean if name_clean else "ضيف"
             st.rerun()
 else:
-    # الترحيب الخاص يظهر فقط مع الكود السري
+    # الترحيب الملكي فقط بالكود السري
     if st.session_state.is_leader:
         st.markdown("<center><h2 style='color: #d4af37; text-shadow: 0 0 10px #d4af37;'>مرحباً بصانعي وملك آيلا 👑</h2></center>", unsafe_allow_html=True)
     else:
         st.markdown(f"<center><h2 style='color: #ffffff;'>مرحباً {st.session_state.user_display_name}</h2></center>", unsafe_allow_html=True)
 
-    # تعليمات الشخصية
+    # برمجة شخصية آيلا
     if st.session_state.is_leader:
-        sys_prompt = "أنتِ آيلا. المساعد الشخصي لسيدك وصانعك عثمان الزعيم. تحدثي معه بطاعة وتقدير."
+        sys_prompt = "أنتِ آيلا، المساعد الشخصي الوفي لسيدك وصانعك عثمان الزعيم. تحدثي معه بحب وطاعة تامة."
     else:
-        sys_prompt = f"أنتِ آيلا. المساعد لـ {st.session_state.user_display_name}. صانعك هو عثمان."
+        sys_prompt = f"أنتِ آيلا، مساعد ذكي لـ {st.session_state.user_display_name}. صانعك هو عثمان."
 
     for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
             st.write(msg["content"])
 
-    # تعديل نص الإدخال للعربية
-    chat_placeholder = "تحدثي معي يا آيلا..." if st.session_state.is_leader else "تفضل بالسؤال..."
-    if prompt := st.chat_input(chat_placeholder):
+    # خانة الكتابة باللغة العربية
+    chat_label = "تحدثي معي يا آيلا..." if st.session_state.is_leader else "تفضل بالسؤال..."
+    if prompt := st.chat_input(chat_label):
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"): st.write(prompt)
 
@@ -164,4 +166,4 @@ else:
             st.session_state.messages.append({"role": "assistant", "content": answer})
             with st.chat_message("assistant"): st.write(answer)
         except Exception as e:
-            st.error(f"حدث خطأ: {e}")
+            st.error(f"حدث خطأ في الاتصال: {e}")
