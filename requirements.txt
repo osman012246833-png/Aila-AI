@@ -2,7 +2,5 @@ streamlit
 groq
 gTTS
 streamlit-mic-recorder
-streamlit
-groq
 Pillow
 requests
