@@ -1,4 +1,4 @@
 streamlit
 groq
-gTTS
+gtts
 streamlit-mic-recorder
