@@ -2,154 +2,193 @@ import streamlit as st
 from groq import Groq
 import time
 
-# 1. إعدادات الصفحة والأيقونة
-st.set_page_config(page_title="Aila AI", page_icon="💠", layout="centered")
+# --- 1. إعدادات الصفحة والهوية ---
+st.set_page_config(page_title="Aila AI | آيلا", page_icon="💠", layout="wide")
 
-# 2. التصميم الجديد (مطابق لصور Gemini & ChatGPT)
+# --- 2. التصميم (CSS) مطابق تماماً للصور ---
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
     
     html, body, [class*="stApp"] {
+        background-color: #000000;
+        color: #FFFFFF;
         font-family: 'Cairo', sans-serif;
-        direction: rtl; text-align: right;
-        background-color: #0b0b0b; /* أسود عميق */
-        color: #e3e3e3 !important;
+        direction: rtl;
     }
 
-    /* تحسين شكل فقاعات الدردشة */
-    .stChatMessage {
-        background-color: transparent !important;
-        padding: 20px 0 !important;
+    /* فقاعات الدردشة */
+    .user-bubble {
+        background-color: #2f2f2f;
+        padding: 15px 20px;
+        border-radius: 20px;
+        margin: 10px 0;
+        display: inline-block;
+        max-width: 80%;
+        float: left; /* المستخدم يسار */
+        font-size: 20px;
     }
 
-    /* نص المستخدم */
-    [data-testid="stChatMessageUser"] {
-        background-color: #2f2f2f !important;
-        border-radius: 25px !important;
-        padding: 15px 25px !important;
-        margin-bottom: 15px;
-        width: fit-content;
-        margin-right: auto; /* لليمين */
+    .ai-bubble {
+        background-color: transparent;
+        padding: 15px 5px;
+        margin: 10px 0;
+        display: block;
+        width: 100%;
+        font-size: 20px;
+        line-height: 1.6;
     }
 
-    /* نص آيلا */
-    [data-testid="stChatMessageAssistant"] {
-        margin-bottom: 25px;
+    /* السبحة الإلكترونية */
+    .tasbih-box {
+        text-align: center;
+        background: linear-gradient(145deg, #1a1a1a, #000);
+        padding: 40px;
+        border-radius: 50%;
+        width: 250px;
+        height: 250px;
+        margin: auto;
+        border: 4px solid #00ffff;
+        box-shadow: 0 0 30px #00ffff55;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        cursor: pointer;
     }
 
-    /* حجم الخط وتوضيحه */
-    .stChatMessage p, .stMarkdown p {
-        font-size: 20px !important;
-        line-height: 1.6 !important;
-        color: #e3e3e3 !important;
-    }
-
-    /* تصميم شريط الإدخال السفلي */
-    [data-testid="stChatInputContainer"] {
+    /* شريط الإدخال السفلي */
+    div[data-testid="stChatInput"] {
+        bottom: 20px !important;
+        background-color: #1e1e1e !important;
+        border: 1px solid #333 !important;
         border-radius: 30px !important;
+    }
+
+    /* الأزرار */
+    .stButton>button {
+        border-radius: 20px !important;
         border: 1px solid #444 !important;
         background-color: #1e1e1e !important;
-        padding: 5px 15px !important;
-    }
-
-    .main-header {
-        text-align: center;
-        margin-bottom: 50px;
-        margin-top: 30px;
-    }
-
-    .main-header h1 {
-        font-size: 3rem;
-        font-weight: 800;
-        background: -webkit-linear-gradient(#00ffff, #ff00ff);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-
-    /* الأزرار السريعة مثل Gemini */
-    .quick-btn {
-        display: inline-block;
-        padding: 10px 20px;
-        margin: 5px;
-        background: #1e1e1e;
-        border: 1px solid #444;
-        border-radius: 15px;
-        font-size: 16px;
-        cursor: pointer;
+        color: white !important;
+        width: 100%;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# 3. المحرك والتهيئة
-client = Groq(api_key="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")
-SECRET_CODE = "osman 6/11/2008"
-
+# --- 3. إدارة الذاكرة والبيانات ---
 if "messages" not in st.session_state: st.session_state.messages = []
+if "counter" not in st.session_state: st.session_state.counter = 0
+if "page" not in st.session_state: st.session_state.page = "chat"
 if "is_authenticated" not in st.session_state: st.session_state.is_authenticated = False
 
-# 4. نظام الدخول
+client = Groq(api_key="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")
+
+# --- 4. نظام التبديل بين الشاشات ---
+def go_to_tasbih(): st.session_state.page = "tasbih"
+def go_to_chat(): st.session_state.page = "chat"
+
+# --- 5. واجهة تسجيل الدخول ---
 if not st.session_state.is_authenticated:
-    st.markdown('<div class="main-header"><h1>آيلا | Aila AI</h1></div>', unsafe_allow_html=True)
-    st.markdown("<center><h3 style='color:#888;'>مرحباً بك.. ادخل الرمز للبدء</h3></center>", unsafe_allow_html=True)
-    user_input = st.text_input("", placeholder="اكتب اسمك أو الرمز السري هنا...", key="login_pass")
+    st.markdown("<h1 style='text-align:center;'>💠 آيلا الذكية</h1>", unsafe_allow_html=True)
+    name = st.text_input("ادخل اسمك للبدء", placeholder="مثلاً: الزعيم عثمان")
+    if st.button("دخول"):
+        st.session_state.is_authenticated = True
+        st.session_state.user_name = name
+        st.rerun()
+
+# --- 6. صفحة السبحة (ركن العبادة) ---
+elif st.session_state.page == "tasbih":
+    st.markdown("<h2 style='text-align:center;'>📿 ركن التسبيح والذكر</h2>", unsafe_allow_html=True)
+    st.write("---")
     
-    if st.button("بدء المحادثة"):
-        if user_input == SECRET_CODE:
-            st.session_state.is_authenticated = True
-            st.session_state.user_display_name = "الزعيم عثمان"
-            st.session_state.is_maker = True
+    col1, col2, col3 = st.columns([1,2,1])
+    with col2:
+        st.markdown(f"""
+            <div class="tasbih-box">
+                <small style="color:#00ffff;">اضغط للعد</small>
+                <h1 style="font-size: 80px; margin:0;">{st.session_state.counter}</h1>
+                <p>سُبْحَانَ اللَّهِ</p>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        if st.button("➕ تسبيح"):
+            st.session_state.counter += 1
             st.rerun()
-        elif user_input:
-            st.session_state.is_authenticated = True
-            st.session_state.user_display_name = user_input
-            st.session_state.is_maker = False
+        
+        if st.button("🔄 تصفير العداد"):
+            st.session_state.counter = 0
             st.rerun()
+            
+    if st.button("⬅️ العودة للدردشة"):
+        go_to_chat()
+        st.rerun()
+
+# --- 7. صفحة الدردشة الرئيسية ---
 else:
-    # رأس الصفحة بعد الدخول
-    st.markdown(f'<div style="text-align:left; color:#888; font-size:14px;">إشراف عثمان | 20/11/2008</div>', unsafe_allow_html=True)
-    
-    if len(st.session_state.messages) == 0:
-        st.markdown(f"<h1 style='text-align:center; margin-top:50px;'>كيف يمكنني مساعدتك اليوم، {st.session_state.user_display_name}؟</h1>", unsafe_allow_html=True)
-        # أزرار سريعة
+    # القائمة الجانبية (السجل طويل المدى والشعارات)
+    with st.sidebar:
+        st.markdown(f"### 👑 {st.session_state.user_name}")
+        st.write("---")
+        st.button("📿 ركن التسبيح والعبادة", on_click=go_to_tasbih)
+        st.write("---")
+        st.markdown("### 🕒 سجل المحادثات")
+        if st.button("🗑️ مسح السجل"):
+            st.session_state.messages = []
+            st.rerun()
+        for i, msg in enumerate(st.session_state.messages[::2]):
+            st.caption(f"💬 {msg['content'][:20]}...")
+
+    # واجهة الترحيب
+    if not st.session_state.messages:
+        st.markdown(f"<h1 style='text-align:center; margin-top:100px;'>كيف يمكنني مساعدتك اليوم يا {st.session_state.user_name}؟</h1>", unsafe_allow_html=True)
+        
         col1, col2 = st.columns(2)
         with col1:
-            st.markdown('<div class="quick-btn">💡 اسأل عن تاريخ الإسلام</div>', unsafe_allow_html=True)
-            st.markdown('<div class="quick-btn">📖 تفسير آية قرآنية</div>', unsafe_allow_html=True)
+            if st.button("📖 اسأل عن آية أو حديث"):
+                st.session_state.messages.append({"role": "user", "content": "أعطني موعظة دينية قصيرة"})
+                st.rerun()
+            if st.button("💡 فكرة مشروع برمجي"):
+                st.session_state.messages.append({"role": "user", "content": "اقترح علي فكرة تطبيق ذكي"})
+                st.rerun()
         with col2:
-            st.markdown('<div class="quick-btn">🛠️ مساعدة برمجية</div>', unsafe_allow_html=True)
-            st.markdown('<div class="quick-btn">✍️ كتابة مقال إبداعي</div>', unsafe_allow_html=True)
+            if st.button("🛡️ نصيحة في الأمن السيبراني"):
+                st.session_state.messages.append({"role": "user", "content": "كيف أحمي حساباتي؟"})
+                st.rerun()
+            if st.button("📝 تلخيص نص طويل"):
+                st.session_state.messages.append({"role": "user", "content": "سأعطيك نصاً لتقومي بتلخيصه"})
+                st.rerun()
 
-    # عرض الدردشة
+    # عرض الرسائل بسلوب انسيابي
     for msg in st.session_state.messages:
-        with st.chat_message(msg["role"]):
-            st.markdown(msg["content"])
+        if msg["role"] == "user":
+            st.markdown(f'<div style="text-align:left;"><div class="user-bubble">{msg["content"]}</div></div>', unsafe_allow_html=True)
+        else:
+            st.markdown(f'<div class="ai-bubble"><b>آيلا:</b><br>{msg["content"]}</div>', unsafe_allow_html=True)
 
-    # الإدخال
-    if prompt := st.chat_input("طرح سؤالك على آيلا..."):
+    # حقل الإدخال
+    if prompt := st.chat_input("تحدث مع آيلا..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user"):
-            st.markdown(prompt)
+        st.rerun()
 
-        with st.chat_message("assistant"):
-            # تعليمات المعرفة الدينية والإسلامية
-            religion_context = (
-                "أنتِ آيلا AI، خبيرة ومثقفة جداً. لديكِ معرفة عميقة بالأديان السماوية، "
-                "وبالأخص الدين الإسلامي (القرآن، السنة، الفقه، والتاريخ الإسلامي). "
-                "عند الحديث عن الدين، كوني محترمة، دقيقة، واستخدمي لغة فصيحة وجميلة. "
-                "إذا كان المستخدم هو 'الزعيم عثمان'، تحدثي معه كصانعك بكل تقدير."
-            )
-            
-            full_response = ""
+    # توليد الرد (فقط إذا كانت آخر رسالة من المستخدم)
+    if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
+        with st.markdown('<div class="ai-bubble"><b>آيلا:</b><br></div>', unsafe_allow_html=True):
             placeholder = st.empty()
+            full_response = ""
             
+            # تعليمات النظام (دين + ذكاء + احترام للصانع)
+            sys_prompt = (
+                "أنتِ آيلا AI. رفيقة ذكية ومثقفة. لديكِ علم واسع بالإسلام وتاريخه. "
+                "أسلوبك فخم، هادئ، ومساعد. إذا كان المستخدم هو الزعيم عثمان، "
+                "خاطبيه بلقبه المفضل بكل احترام وتواضع."
+            )
+
             try:
                 completion = client.chat.completions.create(
                     model="llama-3.3-70b-versatile",
-                    messages=[{"role": "system", "content": religion_context}] + st.session_state.messages[-10:],
+                    messages=[{"role": "system", "content": sys_prompt}] + st.session_state.messages,
                     stream=True
                 )
-                
                 for chunk in completion:
                     if chunk.choices[0].delta.content:
                         full_response += chunk.choices[0].delta.content
@@ -158,4 +197,4 @@ else:
                 placeholder.markdown(full_response)
                 st.session_state.messages.append({"role": "assistant", "content": full_response})
             except Exception as e:
-                st.error(f"خطأ: {e}")
+                st.error(f"عذراً، هناك ضغط على المحرك. الخطأ: {e}")
