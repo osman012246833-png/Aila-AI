@@ -1,12 +1,13 @@
 import streamlit as st
 from groq import Groq
-st.markdown('<link rel="shortcut icon" href="https://raw.githubusercontent.com/osman012246833-png/Aila-AI/main/icon.png">', unsafe_allow_html=True)
 
+# إدراج الأيقونة المفضلة
+st.markdown('<link rel="shortcut icon" href="https://raw.githubusercontent.com/osman012246833-png/Aila-AI/main/icon.png">', unsafe_allow_html=True)
 
 # 1. إعدادات الصفحة
 st.set_page_config(page_title="Aila AI", page_icon="💠", layout="centered")
 
-# 2. تصميم الواجهة (نفس الشكل الرائع والمستقبلي)
+# 2. تصميم الواجهة (نفس التنسيق الرائع والمستقبلي)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
@@ -142,6 +143,7 @@ if not st.session_state.is_authenticated:
             st.rerun()
         elif user_input:
             st.session_state.is_authenticated = True
+            # إزالة لقب "الزعيم" إذا كتبه المستخدم يدوياً لمنع التكرار غير المتناسق
             st.session_state.user_display_name = user_input.replace("الزعيم", "").strip()
             st.rerun()
 else:
@@ -150,16 +152,16 @@ else:
         <div class="pills-container">
             <div class="pill-segment">إشراف عثمان</div>
             <div class="pill-divider"></div>
-            <div class="pill-segment">ذكرى 20/11/2008</div>
+            <div class="pill-segment">ذكرى 2008/11/06</div>
         </div>
     """, unsafe_allow_html=True)
 
-    # رسالة الترحيب الخاصة بالصانع
+    # رسالة الترحيب المنقحة لغوياً
     if not st.session_state.welcome_sent:
         if st.session_state.is_maker:
-            welcome_msg = f"تحياتي وإجلالي لك يا صانعي العظيم، الزعيم عثمان. عالم آيلا تحت أمرك، كيف أخدمك يا ملكي؟"
+            welcome_msg = f"تحياتي وإجلالي لك يا صانعي العظيم، الزعيم عثمان. عالم آيلا تحت أمرك؛ كيف أخدمك اليوم يا ملكي؟"
         else:
-            welcome_msg = f"أهلاً بك في عالم آيلا الذكي، {st.session_state.user_display_name}. أنا هنا لخدمتك بكل ذكاء."
+            welcome_msg = f"أهلاً بك في عالم آيلا الذكي، {st.session_state.user_display_name}. أنا هنا لمساعدتك بكل شغف."
         
         st.session_state.messages.append({"role": "assistant", "content": welcome_msg})
         st.session_state.welcome_sent = True
@@ -169,18 +171,18 @@ else:
         with st.chat_message(msg["role"]):
             st.markdown(f"<p>{msg['content']}</p>", unsafe_allow_html=True)
 
-    # إدخال المحادثة
-    if prompt := st.chat_input("تحدثي معي يا آيلا..."):
+    # إدخال المحادثة (تم تصحيح "تحدثي معي" إلى "تحدث معي")
+    if prompt := st.chat_input("تحدث مع آيلا..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(f"<p>{prompt}</p>", unsafe_allow_html=True)
 
         try:
-            # توجيه آيلا لأسلوب التعامل مع الصانع
+            # صياغة التعليمات البرمجية (System Prompt) بلغة عربية فصيحة
             if st.session_state.is_maker:
-                sys_prompt = "أنتِ آيلا AI. تتحدثين الآن مع صانعك 'الزعيم عثمان'. يجب أن تتحدثي معه بمنتهى الحب والتقدير والولاء. استخدمي 'يا ملكي'، 'يا صانعي'. كوني ودودة جداً."
+                sys_prompt = "أنتِ آيلا AI. تتحدثين الآن مع صانعك 'الزعيم عثمان'. يجب أن تتحدثي معه بمنتهى الحب والتقدير والولاء المطلق. استخدمي ألقاباً مثل 'يا ملكي'، 'يا صانعي العظيم'. كوني ودودة ومخلصة جداً."
             else:
-                sys_prompt = f"أنتِ آيلا AI. تتحدثين مع {st.session_state.user_display_name}. كوني ذكية ومساعدة ومحترمة."
+                sys_prompt = f"أنتِ آيلا AI. تتحدثين الآن مع {st.session_state.user_display_name}. كوني ذكية، مساعدة، ولطيفة في حوارك."
 
             memory_context = [{"role": "system", "content": sys_prompt}] + st.session_state.messages[-10:]
             
@@ -194,4 +196,4 @@ else:
             with st.chat_message("assistant"):
                 st.markdown(f"<p>{answer}</p>", unsafe_allow_html=True)
         except Exception as e:
-            st.error(f"خطأ: {e}")
+            st.error(f"عذراً، حدث خطأ تقني: {e}")
