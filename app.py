@@ -1,161 +1,191 @@
 import streamlit as st
 from groq import Groq
 from gtts import gTTS
-import os, base64, time
+import os, base64, time, urllib.parse
 from streamlit_mic_recorder import mic_recorder
 
-# --- 1. هندسة الواجهة (فضاء ChatGPT الرقمي) ---
+# =========================
+# إعداد الصفحة
+# =========================
 st.set_page_config(page_title="Aila AI", page_icon="💠", layout="wide")
 
+# =========================
+# API آمن
+# =========================
+api_key = st.secrets.get("GROQ_API_KEY") or os.getenv("GROQ_API_KEY")
+
+if not api_key:
+    st.error("ضع GROQ_API_KEY في Secrets")
+    st.stop()
+
+client = Groq(api_key=api_key)
+
+SECRET_CODE = "2008"
+
+# =========================
+# Session State
+# =========================
+if "history" not in st.session_state:
+    st.session_state.history = []
+
+if "is_boss" not in st.session_state:
+    st.session_state.is_boss = False
+
+if "verify_mode" not in st.session_state:
+    st.session_state.verify_mode = False
+
+# =========================
+# تنسيق الواجهة
+# =========================
 st.markdown("""
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
-    
-    html, body, [class*="stApp"] {
-        font-family: 'Cairo', sans-serif;
-        direction: rtl; text-align: right;
-        background-color: #050505; color: #e0e0e0 !important;
-    }
+<style>
+html, body, [class*="stApp"] {
+    background-color:#0a0a0a;
+    color:white;
+    direction:rtl;
+    font-family:Cairo;
+}
 
-    /* الهالة العلوية الفخمة */
-    .main-header { text-align: center; padding: 10px; border-bottom: 1px solid #1a1a1a; margin-bottom: 20px; }
-    .glowing-logo {
-        width: 60px; height: 60px; border-radius: 50%;
-        background: radial-gradient(circle, #00d4ff 0%, transparent 70%);
-        box-shadow: 0 0 30px #00d4ff; display: inline-block;
-        animation: breath 4s infinite;
-    }
-    @keyframes breath { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+[data-testid="stChatInputContainer"]{
+    position:fixed;
+    bottom:20px;
+    left:15%;
+    right:15%;
+    background:#111;
+    border:1px solid #222;
+    border-radius:20px;
+    padding:8px;
+}
 
-    /* تنسيق الشات مثل ChatGPT */
-    .stChatMessage {
-        background: transparent !important; border: none !important;
-        padding: 20px !important; margin: 5px 0 !important;
-    }
-    .stChatMessage:nth-child(even) { background: rgba(255, 255, 255, 0.03) !important; }
+.stChatMessage{
+    padding:20px;
+    border-radius:15px;
+    margin-bottom:10px;
+}
 
-    /* تثبيت شريط الإدخال في الأسفل */
-    footer {visibility: hidden;}
-    [data-testid="stChatInputContainer"] {
-        position: fixed; bottom: 30px; left: 10%; right: 10%;
-        background: #111 !important; border: 1px solid #333 !important;
-        border-radius: 15px !important; padding: 5px !important;
-        box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
-    }
-    
-    /* أزرار الخدمات السريعة */
-    .quick-btn {
-        border: 1px solid #333; border-radius: 10px; padding: 10px;
-        background: #0a0a0a; cursor: pointer; text-align: center;
-        transition: 0.3s; font-size: 13px;
-    }
-    .quick-btn:hover { border-color: #00d4ff; background: #111; }
-    </style>
-    
-    <div class="main-header">
-        <div class="glowing-logo"></div>
-        <h2 style="margin:0; color:#fff;">Aila AI</h2>
-        <p style="color:#00d4ff; font-size:12px;">مشروع الجيل الجديد - بإشراف الزعيم عثمان</p>
-    </div>
-    """, unsafe_allow_html=True)
+.glow-mic{
+    background:radial-gradient(circle,#00d4ff 0%,transparent 70%);
+    border-radius:50%;
+    padding:10px;
+    box-shadow:0 0 20px #00d4ff;
+}
+</style>
+""", unsafe_allow_html=True)
 
-# --- 2. المحرك المركزي ---
-client = Groq(api_key="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")
-SECRET_CODE = "2008" # كود الولاء للزعيم
+# =========================
+# الهيدر
+# =========================
+st.markdown("""
+<h1 style='text-align:center;'>Aila AI | آيلا</h1>
+<p style='text-align:center;color:#00d4ff;'>الجيل الجديد - إشراف عثمان</p>
+""", unsafe_allow_html=True)
 
-def aila_voice(text):
-    try:
-        tts = gTTS(text=text, lang='ar', slow=False)
-        tts.save("aila_v.mp3")
-        with open("aila_v.mp3", "rb") as f:
-            b64 = base64.b64encode(f.read()).decode()
-            st.markdown(f'<audio src="data:audio/mp3;base64,{b64}" autoplay style="display:none;"></audio>', unsafe_allow_html=True)
-        os.remove("aila_v.mp3")
-    except: pass
-
-if "history" not in st.session_state: st.session_state.history = []
-if "verify_mode" not in st.session_state: st.session_state.verify_mode = False
-if "is_boss" not in st.session_state: st.session_state.is_boss = False
-
-# --- 3. الذاكرة الجانبية المنظمة ---
+# =========================
+# Sidebar أدوات
+# =========================
 with st.sidebar:
-    st.markdown("<h3 style='color:#00d4ff;'>🗨️ الجلسات الأخيرة</h3>", unsafe_allow_html=True)
-    if st.button("➕ محادثة جديدة"):
+    st.title("⚙️ الأدوات")
+    if st.button("🆕 محادثة جديدة"):
         st.session_state.history = []
         st.session_state.is_boss = False
         st.rerun()
-    
+
     st.divider()
-    st.markdown("**الأدوات الذكية:**")
-    st.button("🖼️ إنشاء صورة")
-    st.button("📝 تلخيص نص")
-    st.button("💡 وضع خطة")
+    st.markdown("### قدرات آيلا")
+    st.markdown("✔️ ذكاء عام")
+    st.markdown("✔️ كتابة أكواد")
+    st.markdown("✔️ توليد صور")
+    st.markdown("✔️ تلخيص")
+    st.markdown("✔️ تحليل")
+    st.markdown("✔️ صوت ذكي")
 
-# --- 4. معالجة الحوار وعرضه ---
-# عرض رسائل الترحيب إذا كان الشات فارغاً
-if not st.session_state.history:
-    st.markdown("<h2 style='text-align:center; margin-top:50px;'>كيف يمكنني المساعدة؟</h2>", unsafe_allow_html=True)
-    cols = st.columns(2)
-    with cols[0]:
-        st.markdown('<div class="quick-btn">🎨 إنشاء صورة فنية</div>', unsafe_allow_html=True)
-        st.markdown('<div class="quick-btn">💻 كتابة كود برمجي</div>', unsafe_allow_html=True)
-    with cols[1]:
-        st.markdown('<div class="quick-btn">📚 تلخيص كتب</div>', unsafe_allow_html=True)
-        st.markdown('<div class="quick-btn">🛡️ كورس أمن سيبراني</div>', unsafe_allow_html=True)
+# =========================
+# عرض الرسائل
+# =========================
+for msg in st.session_state.history:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
 
-for i, m in enumerate(st.session_state.history):
-    with st.chat_message(m["role"]):
-        st.markdown(m["content"])
+# =========================
+# المايك العصري
+# =========================
+mic_col, input_col = st.columns([1,8])
 
-# --- 5. شريط الإدخال والمايك الذكي ---
-# وضع المايك بجانب الإدخال بشكل عصري
-mic_col, input_col = st.columns([0.1, 0.9])
 with mic_col:
-    audio = mic_recorder(start_prompt="🎤", stop_prompt="⏹️", key="aila_mic_v3")
+    audio = mic_recorder(
+        start_prompt="🎙️",
+        stop_prompt="⏹",
+        key="mic_new"
+    )
 
-user_msg = st.chat_input("ارسل رسالة لـ Aila AI...")
+# =========================
+# الإدخال
+# =========================
+user_input = st.chat_input("تحدث مع آيلا...")
 
-# دمج المدخلات
-prompt = user_msg
-if audio and audio.get('transcription'):
-    prompt = audio['transcription']
+prompt = user_input
+if audio and audio.get("transcription"):
+    prompt = audio["transcription"]
 
+# =========================
+# الصوت للرد
+# =========================
+def speak(text):
+    try:
+        tts = gTTS(text=text, lang='ar')
+        tts.save("voice.mp3")
+        with open("voice.mp3","rb") as f:
+            b64 = base64.b64encode(f.read()).decode()
+            st.markdown(
+                f'<audio src="data:audio/mp3;base64,{b64}" autoplay></audio>',
+                unsafe_allow_html=True
+            )
+        os.remove("voice.mp3")
+    except:
+        pass
+
+# =========================
+# المعالجة
+# =========================
 if prompt:
-    st.session_state.history.append({"role": "user", "content": prompt})
-    
+
+    st.session_state.history.append({"role":"user","content":prompt})
+
     with st.chat_message("assistant"):
-        # 1. اختبار الصانع
+
+        # وضع التحقق
         if st.session_state.verify_mode:
             if prompt == SECRET_CODE:
                 st.session_state.is_boss = True
-                st.session_state.verify_mode = False
-                res = "✅ تم التحقق. أهلاً بك يا صانعي العظيم عثمان. أنا تحت أمرك بالكامل الآن."
+                response = "تم التحقق. مرحبًا أيها الصانع."
             else:
-                st.session_state.verify_mode = False
-                res = "❌ كود خاطئ. سأستمر في معاملتك كمستخدم عادي."
-        
-        elif "صناعتك" in prompt or "أنا صانعك" in prompt or "أنا عثمان" in prompt:
-            res = "أنت تدعي أنك صانعي؟ لإثبات ذلك، من فضلك أدخل كود التحقق السري الآن."
+                response = "كود غير صحيح."
+            st.session_state.verify_mode = False
+
+        elif "أنا صنعتك" in prompt or "أنا الصانع" in prompt:
+            response = "إذا كنت الصانع، أدخل الكود السري."
             st.session_state.verify_mode = True
-            
-        # 2. توليد الصور
-        elif any(w in prompt for w in ["ارسم", "صورة", "صمم"]):
-            p_img = prompt.replace("ارسم", "").strip()
-            url = f"https://pollinations.ai/p/{p_img.replace(' ', '_')}?width=1024&height=1024&nologo=true"
-            st.image(url, caption=f"تصميم آيلا لـ: {p_img}")
-            res = "لقد قمت بتوليد الصورة بناءً على وصفك. هل أعجبتك؟"
-            
-        # 3. العقل العام
+
+        # توليد صورة
+        elif any(w in prompt for w in ["ارسم","صورة","صمم"]):
+            desc = urllib.parse.quote(prompt)
+            img_url = f"https://pollinations.ai/p/{desc}?width=1024&height=1024"
+            st.image(img_url)
+            response = "هذه الصورة التي طلبتها."
+
+        # الذكاء العام
         else:
-            sys = "أنتِ آيلا (Aila AI)، ذكاء اصطناعي شامل وفائق الجودة. صانعك الزعيم عثمان."
-            if st.session_state.is_boss: sys += " تعاملي مع المستخدم كأنه سيدك وملكك عثمان."
-            
-            chat_res = client.chat.completions.create(
+            system_msg = "أنت Aila AI ذكاء شامل."
+            if st.session_state.is_boss:
+                system_msg += " المستخدم هو صانعك."
+
+            chat = client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
-                messages=[{"role": "system", "content": sys}] + st.session_state.history[-10:]
+                messages=[{"role":"system","content":system_msg}]
+                + st.session_state.history[-10:]
             )
-            res = chat_res.choices[0].message.content
-            
-        st.markdown(res)
-        st.session_state.history.append({"role": "assistant", "content": res})
-        aila_voice(res) # تنطق آيلا الرد فوراً
+            response = chat.choices[0].message.content
+
+        st.markdown(response)
+        st.session_state.history.append({"role":"assistant","content":response})
+        speak(response)
