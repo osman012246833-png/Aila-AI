@@ -33,9 +33,8 @@ st.markdown("""
     </div>
     """, unsafe_allow_html=True)
 
-# --- 2. محرك الذكاء الصوتي الشامل وتوليد الصور ---
-# استبدل YOUR_GROQ_API_KEY بمفتاح الـ API الخاص بك من Groq
-client = Groq(api_key="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") 
+# --- 2. محرك الذكاء الصوتي الشامل ---
+client = Groq(api_key="YOUR_GROQ_API_KEY") # ضع مفتاحك هنا
 
 def aila_speak(text):
     """تحويل النص لصوت فصيح"""
@@ -59,9 +58,7 @@ with st.sidebar:
 for i, m in enumerate(st.session_state.memory):
     with st.chat_message(m["role"]):
         st.markdown(m["content"])
-        # إذا كانت الرسالة من آيلا وفيها وسم الصورة <img>، لا نضع زر الصوت بجانب الصورة
-        if m["role"] == "assistant" and "<img>" not in m["content"] and st.button("🔊", key=f"spk_{i}"):
-            aila_speak(m["content"])
+        if m["role"] == "assistant" and st.button("🔊", key=f"spk_{i}"): aila_speak(m["content"])
 
 # --- 4. ميزة "افهميني يا آيلا" (المايك الذكي) ---
 input_col, mic_col = st.columns([0.85, 0.15])
@@ -84,23 +81,13 @@ if final_input:
 
     with st.chat_message("assistant"):
         # برمجة العقل الشامل
-        sys_prompt = "أنتِ آيلا، الذكاء الأصطناعي الأكثر تطوراً. صانعك الزعيم عثمان. تفهمين الصوت والنص، وتجيبين بكل لغات العالم وروابط البرامج والصور. لو طُلب منك صورة، ابدأي ردك بـ 'إليك تصميمي:' واعرضي الصورة مباشرة."
+        sys_prompt = "أنتِ آيلا، الذكاء الأصطناعي الأكثر تطوراً. صانعك الزعيم عثمان. تفهمين الصوت والنص، وتجيبين بكل لغات العالم وروابط البرامج والصور."
         
-        # ميزة توليد الصور مباشرة (مثلما أفعل أنا!)
-        if "ارسم" in final_input or "صورة" in final_input or "صمم" in final_input:
-            image_description = final_input.replace("ارسم", "").replace("صورة", "").replace("صمم", "").strip()
-            # هنا نستخدم وسم <img> مؤقت ليتم استبداله بالصورة الحقيقية
-            st.markdown("إليك تصميمي:") 
-            
-            # (ملحوظة: الصورة هنا هي placeholder، سأشرح لك كيف تربطها بموديل صور حقيقي)
-            # بما أنني لا أستطيع توليد صور مباشرة داخل الكود، سأضع لك placeholder
-            # للتوليد الحقيقي، ستحتاج ربط API لموديل صور مثل DALL-E 3 أو Midjourney أو Stable Diffusion
-            # كمثال: st.image("URL_لصورة_تم_توليدها_من_API_خارجي", caption=image_description)
-            # حالياً، سأعرض لك صورة رمزية أو رابط لتوليدها من Pollinations AI كمثال:
-            img_gen_url = f"https://pollinations.ai/p/{image_description.replace(' ', '_')}?width=1024&height=1024&nologo=true"
-            st.image(img_gen_url, caption=f"تصميم آيلا لـ: {image_description}")
-            
-            response_text = "لقد تجسدت فكرتك في صورة الآن يا زعيم. هل نعدل عليها؟"
+        # ميزة توليد الصور
+        if "ارسم" in final_input or "صورة" in final_input:
+            img_url = f"https://pollinations.ai/p/{final_input.replace(' ', '_')}?width=1024&height=1024"
+            st.image(img_url, caption="من مخيلة آيلا الواسعة")
+            response_text = "لقد تجسدت فكرتك في صورة يا زعيم."
         else:
             completion = client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
