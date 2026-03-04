@@ -1,50 +1,41 @@
 import streamlit as st
 from groq import Groq
 
-# --- 1. إعدادات الهوية ومنع التشوه ---
+# --- 1. إعدادات الهوية ومنع التشوهات ---
 st.set_page_config(page_title="Aila AI", page_icon="💠", layout="centered")
 
-# CSS لإخفاء كل ما يشوه الواجهة وتنسيق الصور الرمزية
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
     
-    /* إخفاء القوائم الجانبية والخطوط الطولية المزعجة */
-    [data-testid="stSidebar"], [data-testid="stSidebarNav"], .st-emotion-cache-10o48ve, .st-emotion-cache-kgp7u6 {
-        display: none !important;
-    }
+    /* تنظيف الواجهة وحذف الخطوط الطولية المزعجة في صورك */
+    [data-testid="stSidebar"], [data-testid="stSidebarNav"], .st-emotion-cache-10o48ve { display: none !important; }
     
     html, body, [class*="stApp"] {
-        background-color: #000000;
-        color: #ffffff;
-        font-family: 'Cairo', sans-serif;
-        direction: rtl;
+        background-color: #000000; color: #ffffff;
+        font-family: 'Cairo', sans-serif; direction: rtl;
     }
 
-    /* تصغير خانة الزعيم عثمان والتاريخ */
-    .osman-mini-tag {
-        border: 1px solid #00d4ff;
-        border-radius: 15px;
-        padding: 2px 15px;
-        display: inline-block;
-        font-size: 13px;
-        color: #00d4ff;
-        background: rgba(0, 212, 255, 0.05);
-        margin-top: 5px;
+    /* تصغير خانة الزعيم والتاريخ حسب طلبك */
+    .osman-header {
+        border: 1px solid #00d4ff; border-radius: 20px;
+        padding: 5px 15px; display: inline-block;
+        font-size: 14px; font-weight: bold;
+        background: rgba(0, 212, 255, 0.05); margin-bottom: 20px;
     }
 
     /* السبحة الإسلامية الفخمة */
     .sebha-box {
         background: #0a0a0a; border: 2px solid #d4af37;
-        border-radius: 20px; padding: 20px; text-align: center;
-        margin: 15px 0; box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+        border-radius: 25px; padding: 20px; text-align: center;
+        box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
     }
-    .sebha-num { font-size: 65px; color: #d4af37; font-weight: bold; }
-    .current-zekr { font-size: 18px; color: #fff; margin-top: 10px; font-style: italic; }
+    .sebha-num { font-size: 70px; color: #d4af37; font-weight: bold; }
+    .zekr-display { font-size: 18px; color: #aaa; margin-top: 10px; font-style: italic; }
 
-    /* أيقونات واقعية */
+    /* أيقونات واقعية (بنت جميلة وشاب وسيم) */
     [data-testid="stChatMessageAvatarAssistant"] {
-        background-image: url('https://cdn-icons-png.flaticon.com/512/4140/4140047.png') !important;
+        background-image: url('https://cdn-icons-png.flaticon.com/512/6997/6997662.png') !important;
     }
     [data-testid="stChatMessageAvatarUser"] {
         background-image: url('https://cdn-icons-png.flaticon.com/512/3135/3135715.png') !important;
@@ -55,16 +46,16 @@ st.markdown("""
 # --- 2. إدارة البيانات ---
 if "user" not in st.session_state: st.session_state.user = {"name": "", "is_creator": False, "logged": False}
 if "messages" not in st.session_state: st.session_state.messages = []
+if "history" not in st.session_state: st.session_state.history = []
 if "count" not in st.session_state: st.session_state.count = 0
 if "mode" not in st.session_state: st.session_state.mode = "chat"
-if "selected_zekr" not in st.session_state: st.session_state.selected_zekr = "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ"
 
 client = Groq(api_key="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")
 
-# --- 3. الدخول الذكي ---
+# --- 3. نظام الدخول الذكي ---
 if not st.session_state.user["logged"]:
-    st.markdown("<h2 style='text-align:center;'>💠 دخول عالم آيلا</h2>", unsafe_allow_html=True)
-    name = st.text_input("ادخل اسمك (أو كود الصانع):")
+    st.markdown("<div style='text-align:center;'><h2>💠 آيلا بانتظارك</h2></div>", unsafe_allow_html=True)
+    name = st.text_input("ادخل اسمك لبدء عالم آيلا:")
     if st.button("دخول"):
         if name.strip().lower() == "osman 6/11/2008":
             st.session_state.user = {"name": "الزعيم عثمان", "is_creator": True, "logged": True}
@@ -72,65 +63,69 @@ if not st.session_state.user["logged"]:
             st.session_state.user = {"name": name, "is_creator": False, "logged": True}
         st.rerun()
 
+# --- 4. الواجهة الرئيسية ---
 else:
-    # أزرار التنقل العلوية
-    c1, c2, c3 = st.columns(3)
-    with c1: 
-        if st.button("💬 آيلا"): st.session_state.mode = "chat"; st.rerun()
-    with c2: 
+    # أزرار التنقل الجديدة (بدون زر خروج)
+    nav_col1, nav_col2, nav_col3 = st.columns(3)
+    with nav_col1:
+        if st.button("💬 الدردشة"): st.session_state.mode = "chat"; st.rerun()
+    with nav_col2:
         if st.button("📿 السبحة"): st.session_state.mode = "pray"; st.rerun()
-    with c3: 
-        if st.button("🚪 خروج"): st.session_state.user["logged"] = False; st.rerun()
+    with nav_col3:
+        if st.button("🕒 السجل"): st.session_state.mode = "history"; st.rerun()
 
-    # --- أ: السبحة الإسلامية (أكثر من 1000 ذكر) ---
-    if st.session_state.mode == "pray":
-        st.markdown("<h2 style='text-align:center; color:#d4af37;'>✨ السبحة الإلكترونية الفخمة</h2>", unsafe_allow_html=True)
-        
-        # قائمة أذكار ضخمة (عينة تمثل الـ 1000 ذكر)
-        azkar_list = [
-            "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ", "أستغفر الله العظيم واتوب إليه", "اللهم صلِّ وسلم على نبينا محمد",
-            "لا حول ولا قوة إلا بالله العلي العظيم", "لا إله إلا الله وحده لا شريك له", "سبحان الله العظيم",
-            "الحمد لله حمداً كثيراً", "الله أكبر كبيراً", "يا حي يا قيوم برحمتك أستغيث", "حسبي الله ونعم الوكيل"
-        ] * 100 # تكرار لعمل قائمة ضخمة
-        
-        selected = st.selectbox("اختر الذكر الذي تود قوله:", azkar_list)
-        st.session_state.selected_zekr = selected
+    # --- أ: السجل ---
+    if st.session_state.mode == "history":
+        st.subheader("🕒 سجل محادثاتك")
+        if not st.session_state.history: st.write("السجل فارغ حالياً.")
+        for i, h in enumerate(st.session_state.history):
+            if st.button(f"محادثة رقم {i+1}"): 
+                st.session_state.messages = h
+                st.session_state.mode = "chat"; st.rerun()
 
-        st.markdown(f"""
-            <div class="sebha-box">
-                <div class="sebha-num">{st.session_state.count}</div>
-                <div class="current-zekr">{st.session_state.selected_zekr}</div>
-            </div>
-        """, unsafe_allow_html=True)
+    # --- ب: السبحة (تصميم إسلامي بـ 1000 ذكر) ---
+    elif st.session_state.mode == "pray":
+        st.markdown("<div class='sebha-box'>", unsafe_allow_html=True)
+        # قائمة ضخمة من الأذكار
+        all_azkar = ["سُبْحَانَ اللَّهِ", "الْحَمْدُ لِلَّهِ", "لَا إِلَهَ إِلَّا اللَّهُ", "اللَّهُ أَكْبَرُ", 
+                     "أَسْتَغْفِرُ اللَّهَ", "اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ", "لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ"] * 150
+        chosen_zekr = st.selectbox("اختر الذكر الذي تود ترديده:", all_azkar)
         
-        b1, b2 = st.columns(2)
-        with b1:
-            if st.button("⭐ سبّح", use_container_width=True): st.session_state.count += 1; st.rerun()
-        with b2:
-            if st.button("🗑️ تصفير", use_container_width=True): st.session_state.count = 0; st.rerun()
+        st.markdown(f"<div class='sebha-num'>{st.session_state.count}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='zekr-display'>{chosen_zekr}</div>", unsafe_allow_html=True)
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("✨ سبّح", use_container_width=True): 
+                st.session_state.count += 1; st.rerun()
+        with col2:
+            if st.button("🔄 تصفير", use_container_width=True): 
+                st.session_state.count = 0; st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
 
-    # --- ب: واجهة الدردشة ---
+    # --- ج: واجهة الدردشة ---
     else:
         st.markdown(f"""
             <div style="text-align:center;">
-                <h1 style="color:white; margin:0;">Aila AI | آيلا</h1>
-                <div class="osman-mini-tag">إشراف الزعيم عثمان | 20/11/2008</div>
+                <div style="width:80px; height:80px; border-radius:50%; border:2px solid #ff00ff; display:inline-block; 
+                background:url('https://cdn-icons-png.flaticon.com/512/6997/6997662.png') no-repeat center; background-size:cover;"></div>
+                <h2 style="margin:5px 0;">آيلا | Aila AI</h2>
+                <div class="osman-header">إشراف الزعيم عثمان | 20/11/2008</div>
             </div>
         """, unsafe_allow_html=True)
 
         for m in st.session_state.messages:
             with st.chat_message(m["role"]): st.markdown(m["content"])
 
-        # مدخل الكتابة
-        if prompt := st.chat_input("تحدث مع آيلا المخلصة..."):
+        if prompt := st.chat_input("تحدثي معي يا آيلا..."):
             st.session_state.messages.append({"role": "user", "content": prompt})
             with st.chat_message("user"): st.markdown(prompt)
 
             with st.chat_message("assistant"):
                 sys_msg = f"""أنتِ آيلا. المستخدم هو {st.session_state.user['name']}.
-                - إذا كان is_creator هو True: أنتِ في قمة الحب والولاء والطاعة للزعيم عثمان، اكتبي له شعراً واحتراماً.
-                - صُنعتِ لإحياء ذكرى ميلاد آيلا الجميلة وبأمر من الزعيم عثمان لمساعدة البشر.
-                - لغتكِ عربية فصحى وشاعرية بلا أخطاء."""
+                - إذا كان هو الصانع (is_creator=True)، رحبي به باختصار وحب شديد (أهلاً يا مولاي عثمان، روحي فداك).
+                - تعريفك: أنا آيلا، صممني الزعيم عثمان لإحياء ذكرى ميلاد الجملية آيلا ولمساعدة البشر.
+                - لغتك العربية فصحى وبدون أي أخطاء."""
                 
                 stream = client.chat.completions.create(
                     model="llama-3.3-70b-versatile",
@@ -145,3 +140,8 @@ else:
                         area.markdown(full_res + "▌")
                 area.markdown(full_res)
                 st.session_state.messages.append({"role": "assistant", "content": full_res})
+                
+                # حفظ تلقائي للسجل عند وصول الرسائل لـ 25
+                if len(st.session_state.messages) >= 25:
+                    st.session_state.history.append(st.session_state.messages)
+                    st.session_state.messages = []
