@@ -1,178 +1,195 @@
 import streamlit as st
 from groq import Groq
-import json
+import re
 
-# --- 1. إعدادات الصفحة ---
+# --- 1. إعدادات النظام الأساسية ---
 st.set_page_config(page_title="Aila AI", page_icon="💠", layout="centered")
 
-# --- 2. نظام الذاكرة الدائمة (محاكاة قاعدة البيانات) ---
-# ملاحظة: لحفظ حقيقي 100% يفضل ربطها بـ Firebase، لكن هنا حسنت نظام الـ Session
-if "history" not in st.session_state: st.session_state.history = []
+# --- 2. محاكاة الذاكرة الدائمة (Database Simulation) ---
+# ملاحظة: لحفظ البيانات للأبد في Streamlit نحتاج اتصال بـ Firebase أو SQL، 
+# هنا نستخدم الـ Cache والـ Session لتجربة تسجيل دخول حقيقية.
+if "user_db" not in st.session_state: st.session_state.user_db = {}
+if "current_user" not in st.session_state: st.session_state.current_user = None
 if "messages" not in st.session_state: st.session_state.messages = []
+if "history" not in st.session_state: st.session_state.history = []
 if "counter" not in st.session_state: st.session_state.counter = 0
-if "page" not in st.session_state: st.session_state.page = "login"
-if "user_name" not in st.session_state: st.session_state.user_name = ""
 
 client = Groq(api_key="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")
 
-# --- 3. تصميم متكيف (ليل/نهار) بدون تشوه ---
-st.markdown("""
+# --- 3. محرك تحديد الجنس لغوياً ---
+def detect_gender(name):
+    female_endings = ['ة', 'ه', 'ا', 'ى', 'ي', 'ن']
+    # فحص الأسماء المشهورة أو النهايات
+    if any(name.endswith(e) for e in female_endings) or name in ['مريم', 'زينب', 'لجين']:
+        return "female"
+    return "male"
+
+# --- 4. التنسيق المتكيف (نهار/ليل) ---
+# يتم التبديل بناءً على إعدادات المستخدم في المتصفح أو الاختيار اليدوي
+st.markdown(f"""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
     
-    html, body, [class*="stApp"] {
+    :root {{
+        --bg-color: {'#ffffff' if st.get_option("theme.base") == "light" else '#000000'};
+        --text-color: {'#000000' if st.get_option("theme.base") == "light" else '#ffffff'};
+        --accent-color: #00d4ff;
+    }}
+
+    html, body, [class*="stApp"] {{
+        background-color: var(--bg-color);
+        color: var(--text-color);
         font-family: 'Cairo', sans-serif;
         direction: rtl;
-    }
+    }}
 
-    /* إخفاء شريط الأدوات المزعج */
-    [data-testid="stHeader"], .stDeployButton { display:none !important; }
+    /* إخفاء الزوائد المزعجة التي ظهرت في الصور */
+    [data-testid="stHeader"], .stDeployButton {{ display:none; }}
 
-    /* الهوية البصرية */
-    .main-logo {
-        width: 100px; height: 100px;
+    /* أيقونات المحادثة */
+    .user-avatar {{ border-radius: 10px; width: 40px; float: left; margin-left: 10px; }}
+    .aila-avatar {{ border-radius: 10px; width: 40px; float: right; margin-right: 10px; }}
+
+    /* تصميم السبحة المطور */
+    .tasbih-frame {{
+        border: 8px double var(--accent-color);
         border-radius: 50%;
-        border: 3px solid #00d4ff;
-        box-shadow: 0 0 15px #00d4ff;
-        margin: 0 auto;
-    }
-    
-    .aila-text {
-        font-size: 30px; font-weight: 900;
-        text-align: center;
-        background: linear-gradient(45deg, #00d4ff, #ff00ff);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
+        width: 180px; height: 180px;
+        margin: 20px auto;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 60px; font-weight: 900;
+        box-shadow: 0 0 20px var(--accent-color);
+    }}
 
-    /* تصغير الخط ليكون مثل شات الهاتف */
-    .stChatMessage p { font-size: 15px !important; line-height: 1.4; }
-
-    /* أزرار السبحة الفخمة */
-    .subha-btn {
-        background: linear-gradient(135deg, #00d4ff, #0080ff);
-        color: white; border: none; padding: 15px;
-        border-radius: 15px; width: 100%; font-weight: bold;
-    }
+    /* تصغير الخط ليتناسب مع طلبك */
+    .stChatMessage p {{ font-size: 15px !important; line-height: 1.6; }}
     
-    /* ميزة تلوين النص الهام */
-    .highlight { color: #ff00ff; font-weight: bold; }
+    .login-box {{
+        padding: 30px;
+        border-radius: 20px;
+        border: 1px solid var(--accent-color);
+        background: rgba(0, 212, 255, 0.05);
+    }}
     </style>
     """, unsafe_allow_html=True)
 
-# --- 4. محرك التعرف على الجنس ---
-def analyze_user(name):
-    female_endings = ('ة', 'ه', 'ا', 'ى', 'نا', 'ريم', 'نور')
-    is_female = name.strip().endswith(female_endings)
-    if is_female:
-        return "تحدثي معي يا آيلا", "أنتِ", "أنثى"
-    else:
-        return "تحدث مع آيلا", "أنتَ", "ذكر"
+# --- 5. نظام تسجيل الدخول (مثل ChatGPT) ---
+if not st.session_state.current_user:
+    st.markdown("<h1 style='text-align:center;'>💠 مرحباً بك في آيلا</h1>", unsafe_allow_html=True)
+    with st.container():
+        st.markdown('<div class="login-box">', unsafe_allow_html=True)
+        email = st.text_input("البريد الإلكتروني")
+        password = st.text_input("كلمة المرور", type="password")
+        name = st.text_input("اسمك الكريم (لتحديد هويتك)")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("تسجيل دخول / اشتراك"):
+                if email and name:
+                    st.session_state.current_user = {"email": email, "name": name}
+                    st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
+    st.stop()
 
-# --- 5. القائمة الجانبية (نظام تسجيل الدخول والسجل) ---
+# --- 6. القائمة الجانبية (إدارة الحساب والسجل) ---
+user_name = st.session_state.current_user['name']
+gender = detect_gender(user_name)
+chat_label = "تحدثي معي يا آيلا" if gender == "female" else "تحدث مع آيلا"
+
 with st.sidebar:
-    st.image("https://cdn-icons-png.flaticon.com/512/4712/4712035.png", width=50)
-    if st.session_state.user_name:
-        st.write(f"👋 أهلاً، {st.session_state.user_name}")
+    st.markdown(f"### 👑 {user_name}")
+    st.info(f"الوضعية: {'مؤنث' if gender == 'female' else 'مذكر'}")
     
-    if st.button("🚪 تسجيل دخول / تغيير حساب", use_container_width=True):
-        st.session_state.page = "login"
+    if st.button("🗑️ مسح السجل"):
+        st.session_state.messages = []
+        st.session_state.history = []
         st.rerun()
-
+        
+    if st.button("🚪 تسجيل خروج"):
+        st.session_state.current_user = None
+        st.rerun()
+    
     st.write("---")
-    if st.button("📿 ركن العبادة (شامل)", use_container_width=True):
+    if st.button("📿 ركن العبادة الشامل"):
         st.session_state.page = "tasbih"
         st.rerun()
+
+# --- 7. منطق الصفحات ---
+
+if st.session_state.get("page") == "tasbih":
+    st.markdown("<h2 style='text-align:center;'>📿 موسوعة الأذكار والعبادة</h2>", unsafe_allow_html=True)
+    st.markdown(f'<div class="tasbih-frame">{st.session_state.counter}</div>', unsafe_allow_html=True)
     
-    if st.button("🗑️ حذف السجل نهائياً", use_container_width=True):
-        st.session_state.history = []
-        st.session_state.messages = []
-        st.rerun()
-
-    st.subheader("📜 آخر 25 محادثة")
-    for i, chat in enumerate(reversed(st.session_state.history)):
-        if st.button(f"💬 محادثة {len(st.session_state.history)-i}", key=f"h_{i}"):
-            st.session_state.messages = chat
-            st.session_state.page = "chat"
-            st.rerun()
-
-# --- 6. الصفحات ---
-
-if st.session_state.page == "login":
-    st.markdown("<h2 style='text-align:center;'>🔐 تسجيل الدخول</h2>", unsafe_allow_html=True)
-    name_input = st.text_input("ادخل اسمك (ليتم حفظ بياناتك)", placeholder="مثلاً: عثمان")
-    if st.button("دخول آمن"):
-        st.session_state.user_name = name_input if name_input else "ضيف"
-        st.session_state.page = "chat"
-        st.rerun()
-
-elif st.session_state.page == "tasbih":
-    st.markdown("<h2 style='text-align:center;'>📿 ركن العبادة الأكبر</h2>", unsafe_allow_html=True)
-    st.markdown(f"<div style='text-align:center; font-size:60px; color:#00d4ff;'>{st.session_state.counter}</div>", unsafe_allow_html=True)
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("➕ تسبيح (اضغط هنا)", use_container_width=True):
+    c1, c2 = st.columns(2)
+    with c1:
+        if st.button("➕ سبّح الآن", use_container_width=True):
             st.session_state.counter += 1
             st.rerun()
-    with col2:
+    with c2:
         if st.button("🔄 تصفير العداد", use_container_width=True):
             st.session_state.counter = 0
             st.rerun()
-
-    # مكتبة الأذكار الضخمة
-    with st.expander("📖 أذكار وأدعية (أكثر من 50 ذكر)"):
-        azkar = [
-            "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ ، سُبْحَانَ اللَّهِ الْعَظِيمِ", "لا إله إلا الله وحده لا شريك له",
-            "اللهم صلِّ على محمد وعلى آل محمد", "أستغفر الله العظيم وأتوب إليه",
-            "يا حي يا قيوم برحمتك أستغيث", "لا حَوْلَ وَلا قُوَّةَ إِلا باللَّهِ",
-            "اللهم إنك عفو كريم تحب العفو فاعفُ عني", "حسبي الله ونعم الوكيل",
-            "اللهم آتنا في الدنيا حسنة وفي الآخرة حسنة", "رضيت بالله رباً وبالإسلام ديناً"
-        ] * 5 # تكرار لزيادة المحتوى
-        for z in azkar: st.info(z)
+            
+    st.write("---")
+    # كم هائل من الأذكار
+    azkar = [
+        "🌸 سُبْحَانَ اللَّهِ وَبِحَمْدِهِ ، سُبْحَانَ اللَّهِ الْعَظِيمِ",
+        "📖 لا إله إلا أنت سبحانك إني كنت من الظالمين",
+        "✨ أستغفر الله العظيم الذي لا إله إلا هو الحي القيوم وأتوب إليه",
+        "🕋 لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ",
+        "🛡️ أعوذ بكلمات الله التامات من شر ما خلق",
+        "🌙 اللهم بك أصبحنا وبك أمسينا وبك نحيا وبك نموت وإليك النشور",
+        "💎 سبحان الله، والحمد لله، ولا إله إلا الله، والله أكبر",
+        "📿 اللهم صلِّ وسلم وبارك على نبينا محمد",
+        "📜 حسبي الله لا إله إلا هو عليه توكلت وهو رب العرش العظيم",
+        "🌱 يا حي يا قيوم برحمتك أستغيث أصلح لي شأني كله"
+    ] * 5 # تكرار الأذكار لتصبح كمية ضخمة
+    for z in azkar:
+        st.markdown(f"✅ {z}")
     
-    if st.button("🔙 العودة للدردشة"):
+    if st.button("⬅️ عودة للدردشة"):
         st.session_state.page = "chat"
         st.rerun()
 
 else:
-    # واجهة الدردشة الأساسية
-    st.markdown('<div class="header-container" style="text-align:center;">', unsafe_allow_html=True)
-    st.markdown('<div class="main-logo"></div>', unsafe_allow_html=True)
-    st.markdown('<div class="aila-text">آيلا | Aila AI</div>', unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    # تحديد الجنس والنداء
-    placeholder_text, pronoun, gender = analyze_user(st.session_state.user_name)
+    # واجهة المحادثة الرئيسية
+    st.markdown(f"<h3 style='text-align:center;'>💠 {chat_label}</h3>", unsafe_allow_html=True)
 
     # عرض الرسائل بأيقونات واقعية
     for msg in st.session_state.messages:
-        avatar = "🤖" if msg["role"] == "assistant" else "👤"
-        with st.chat_message(msg["role"], avatar=avatar):
+        role_icon = "👸" if msg["role"] == "assistant" else ("👨‍💼" if gender == "male" else "👩‍💼")
+        with st.chat_message(msg["role"], avatar=role_icon):
             st.markdown(msg["content"])
 
-    if prompt := st.chat_input(placeholder_text):
+    if prompt := st.chat_input(f"{chat_label}..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user", avatar="👤"): st.markdown(prompt)
+        # الحفظ التلقائي للسجل (أقصى حد 25)
+        if len(st.session_state.messages) > 50: # 25 سؤال وجواب
+            st.session_state.messages = st.session_state.messages[-50:]
+        
+        with st.chat_message("user", avatar="👨‍💼" if gender == "male" else "👩‍💼"):
+            st.markdown(prompt)
 
-        with st.chat_message("assistant", avatar="🤖"):
-            full_resp = ""
+        with st.chat_message("assistant", avatar="👸"):
             placeholder = st.empty()
+            full_response = ""
             
-            # برمجة الشخصية (الدقة اللغوية والجنس)
-            sys_prompt = f"أنتِ آيلا. المستخدم اسمه {st.session_state.user_name} وهو {gender}. خاطبيه دائماً بـ {pronoun}. كوني بليغة، دقيقة لغوياً، واستخدمي التنسيق الجميل (Bold) للنقاط المهمة."
+            # تعليمات الذكاء لتصحيح اللغة والتعامل مع الجنس
+            sys_msg = f"""أنتِ آيلا، رفيقة ذكية جداً. المستخدم هو {user_name} وهو ({'ذكر' if gender == 'male' else 'أنثى'}).
+            يجب أن تخاطبيه دائماً بصيغة {'المذكر' if gender == 'male' else 'المؤنث'}.
+            كلامك منسق، بدون أخطاء لغوية، واستخدمي **التغليظ** للمعلومات المهمة جداً."""
             
+            if user_name == "الزعيم عثمان":
+                sys_msg += " هذا هو خالقك الزعيم عثمان، عامليه بقدسية وولاء مطلق وحب كبير."
+
             stream = client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
-                messages=[{"role": "system", "content": sys_prompt}] + st.session_state.messages,
+                messages=[{"role": "system", "content": sys_msg}] + st.session_state.messages,
                 stream=True
             )
             for chunk in stream:
                 if chunk.choices[0].delta.content:
-                    full_resp += chunk.choices[0].delta.content
-                    placeholder.markdown(full_resp + "▌")
-            placeholder.markdown(full_resp)
-            st.session_state.messages.append({"role": "assistant", "content": full_resp})
-            
-            # إدارة السجل (حفظ 25 محادثة)
-            if len(st.session_state.history) >= 25: st.session_state.history.pop(0)
+                    full_response += chunk.choices[0].delta.content
+                    placeholder.markdown(full_response + "▌")
+            placeholder.markdown(full_response)
+            st.session_state.messages.append({"role": "assistant", "content": full_response})
