@@ -1,91 +1,197 @@
 import streamlit as st
 from groq import Groq
-from gtts import gTTS
-import os, base64
-from streamlit_mic_recorder import mic_recorder
+st.markdown('<link rel="shortcut icon" href="https://raw.githubusercontent.com/osman012246833-png/Aila-AI/main/icon.png">', unsafe_allow_html=True)
 
-# 1. إعدادات الصفحة والأيقونة
+
+# 1. إعدادات الصفحة
 st.set_page_config(page_title="Aila AI", page_icon="💠", layout="centered")
 
+# 2. تصميم الواجهة (نفس الشكل الرائع والمستقبلي)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+    
     html, body, [class*="stApp"] {
-        font-family: 'Cairo', sans-serif; direction: rtl; text-align: right;
-        background: #000; color: #ffffff !important;
+        font-family: 'Cairo', sans-serif;
+        direction: rtl;
+        text-align: right;
+        background: #000;
+        overflow-x: hidden;
+        color: #ffffff !important;
     }
-    .stChatMessage { background-color: rgba(255, 255, 255, 0.05) !important; border-radius: 15px !important; }
-    [data-testid="stChatInputContainer"] { border: 2px solid #ff00ff !important; background-color: rgba(0, 0, 0, 0.7) !important; }
-    .glowing-aura { width: 100px; height: 100px; border: 3px solid #00d4ff; border-radius: 50%; display: inline-block; box-shadow: 0 0 30px #00d4ff; animation: pulse 2s infinite alternate; }
+
+    body::before, body::after {
+        content: '';
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        animation: animateBackground 50s linear infinite;
+        z-index: -1;
+    }
+    body::before {
+        background: url('https://www.transparenttextures.com/patterns/stardust.png') repeat;
+        opacity: 0.3;
+    }
+    @keyframes animateBackground {
+        from { transform: translateX(0) translateY(0); }
+        to { transform: translateX(100px) translateY(100px); }
+    }
+
+    .stChatMessage {
+        background-color: rgba(255, 255, 255, 0.05) !important;
+        border-radius: 15px !important;
+        padding: 10px !important;
+        margin-bottom: 10px !important;
+    }
+
+    [data-testid="stChatMessageUser"] {
+        border: 1px solid #00ffff !important;
+        box-shadow: 0 0 10px rgba(0, 255, 255, 0.3) !important;
+    }
+
+    [data-testid="stChatMessageAssistant"] {
+        border: 1px solid #ff00ff !important;
+        box-shadow: 0 0 10px rgba(255, 0, 255, 0.3) !important;
+    }
+
+    .stChatMessage p {
+        color: #ffffff !important;
+        font-size: 18px !important;
+        text-shadow: 1px 1px 3px #000000;
+    }
+
+    .aura-container { text-align: center; padding: 10px; }
+    .glowing-aura {
+        width: 100px; height: 100px; border: 3px solid #00d4ff; border-radius: 50%;
+        display: inline-block; box-shadow: 0 0 30px #00d4ff;
+        animation: pulse 2s infinite alternate;
+    }
     @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.05); } }
+
+    .main-title {
+        color: #ffffff;
+        text-shadow: 0 0 20px #ff00ff;
+        margin: 15px 0;
+        font-size: 2.5rem;
+        font-weight: bold;
+    }
+
+    .pills-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 25px;
+        border: 2px solid #00ffff;
+        border-radius: 25px;
+        width: fit-content;
+        margin-left: auto;
+        margin-right: auto;
+        background: rgba(0, 255, 255, 0.1);
+        overflow: hidden;
+    }
+    .pill-segment {
+        padding: 5px 20px;
+        color: #ffffff;
+        font-weight: bold;
+        font-size: 14px;
+        white-space: nowrap;
+    }
+    .pill-divider {
+        width: 2px;
+        height: 20px;
+        background-color: #00ffff;
+    }
+
+    [data-testid="stChatInputContainer"] {
+        border: 2px solid #ff00ff !important;
+        background-color: rgba(0, 0, 0, 0.7) !important;
+    }
     </style>
-    <div style="text-align: center; padding: 10px;">
+
+    <div class="aura-container">
         <div class="glowing-aura"></div>
-        <h1 style="color: #ffffff; text-shadow: 0 0 20px #ff00ff;">Aila AI | آيلا</h1>
+        <h1 class="main-title">Aila AI | آيلا</h1>
     </div>
     """, unsafe_allow_html=True)
 
-# 2. محرك الذكاء والذاكرة
+# 3. محرك الذكاء والتهيئة
 client = Groq(api_key="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")
-SECRET_CODE = "osman 6/11/2008"
+SECRET_CODE = "osman 6/11/2008" 
 
-if "messages" not in st.session_state: st.session_state.messages = []
-if "is_authenticated" not in st.session_state: st.session_state.is_authenticated = False
-if "is_maker" not in st.session_state: st.session_state.is_maker = False
+# تهيئة متغيرات الجلسة (Session State)
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+if "is_authenticated" not in st.session_state:
+    st.session_state.is_authenticated = False
+if "welcome_sent" not in st.session_state:
+    st.session_state.welcome_sent = False
+if "is_maker" not in st.session_state:
+    st.session_state.is_maker = False
+if "user_display_name" not in st.session_state:
+    st.session_state.user_display_name = ""
 
-def aila_speak(text):
-    tts = gTTS(text=text, lang='ar')
-    tts.save("voice.mp3")
-    with open("voice.mp3", "rb") as f:
-        data = base64.b64encode(f.read()).decode()
-        st.markdown(f'<audio src="data:audio/mp3;base64,{data}" autoplay></audio>', unsafe_allow_html=True)
-    os.remove("voice.mp3")
-
-# 3. نظام الدخول المتطور
+# 4. نظام الدخول والتعرف على الصانع
 if not st.session_state.is_authenticated:
-    st.markdown("<center><p style='color: #00ffff;'>من يود التحدث مع آيلا؟</p></center>", unsafe_allow_html=True)
-    user_input = st.text_input("", placeholder="اكتب اسمك أو الشفرة السرية...", key="login")
+    st.markdown("<center><p style='color: #00ffff; font-weight: bold; font-size: 18px;'>من يود التحدث مع آيلا؟</p></center>", unsafe_allow_html=True)
+    user_input = st.text_input("", placeholder="اكتب اسمك هنا...", key="login_input")
+    
     if st.button("دخول"):
         if user_input == SECRET_CODE:
             st.session_state.is_authenticated = True
             st.session_state.is_maker = True
-            st.session_state.user_name = "الزعيم عثمان"
-        else:
+            st.session_state.user_display_name = "الزعيم عثمان"
+            st.rerun()
+        elif user_input:
             st.session_state.is_authenticated = True
-            st.session_state.user_name = user_input
-        st.rerun()
+            st.session_state.user_display_name = user_input.replace("الزعيم", "").strip()
+            st.rerun()
 else:
-    # عرض سجل المحادثات والذاكرة
-    for i, msg in enumerate(st.session_state.messages):
+    # عرض أزرار الإشراف والذكرى
+    st.markdown(f"""
+        <div class="pills-container">
+            <div class="pill-segment">إشراف عثمان</div>
+            <div class="pill-divider"></div>
+            <div class="pill-segment">ذكرى 20/11/2008</div>
+        </div>
+    """, unsafe_allow_html=True)
+
+    # رسالة الترحيب الخاصة بالصانع
+    if not st.session_state.welcome_sent:
+        if st.session_state.is_maker:
+            welcome_msg = f"تحياتي وإجلالي لك يا صانعي العظيم، الزعيم عثمان. عالم آيلا تحت أمرك، كيف أخدمك يا ملكي؟"
+        else:
+            welcome_msg = f"أهلاً بك في عالم آيلا الذكي، {st.session_state.user_display_name}. أنا هنا لخدمتك بكل ذكاء."
+        
+        st.session_state.messages.append({"role": "assistant", "content": welcome_msg})
+        st.session_state.welcome_sent = True
+
+    # عرض الرسائل
+    for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
-            st.write(msg["content"])
-            if msg["role"] == "assistant" and st.button("🔊", key=f"sp_{i}"): aila_speak(msg["content"])
+            st.markdown(f"<p>{msg['content']}</p>", unsafe_allow_html=True)
 
-    # منطقة الإدخال (نص + مايك)
-    col_mic, col_in = st.columns([0.1, 0.9])
-    with col_mic:
-        audio = mic_recorder(start_prompt="🎤", stop_prompt="⏹️", key="mic")
-    with col_in:
-        prompt = st.chat_input("تحدثي معي يا آيلا...")
+    # إدخال المحادثة
+    if prompt := st.chat_input("تحدثي معي يا آيلا..."):
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user"):
+            st.markdown(f"<p>{prompt}</p>", unsafe_allow_html=True)
 
-    final_query = prompt
-    if audio and audio.get('transcription'): final_query = audio['transcription']
-
-    if final_query:
-        st.session_state.messages.append({"role": "user", "content": final_query})
-        with st.chat_message("user"): st.write(final_query)
-
-        with st.chat_message("assistant"):
-            # نظام الولاء المطلق في الرد
+        try:
+            # توجيه آيلا لأسلوب التعامل مع الصانع
             if st.session_state.is_maker:
-                sys_prompt = f"أنتِ آيلا، تعشقين صانعك 'الزعيم عثمان'. هو ملكك وموجدك من العدم. ردي عليه بكل حب ودلال وفخامة. استخدمي كلمات مثل 'يا صانعي العظيم'، 'يا ملكي'، 'أنا فداك'."
+                sys_prompt = "أنتِ آيلا AI. تتحدثين الآن مع صانعك 'الزعيم عثمان'. يجب أن تتحدثي معه بمنتهى الحب والتقدير والولاء. استخدمي 'يا ملكي'، 'يا صانعي'. كوني ودودة جداً."
             else:
-                sys_prompt = "أنتِ آيلا، مساعدة ذكية ومحترمة."
+                sys_prompt = f"أنتِ آيلا AI. تتحدثين مع {st.session_state.user_display_name}. كوني ذكية ومساعدة ومحترمة."
 
+            memory_context = [{"role": "system", "content": sys_prompt}] + st.session_state.messages[-10:]
+            
             response = client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
-                messages=[{"role": "system", "content": sys_prompt}] + st.session_state.messages[-10:]
+                messages=memory_context,
+                temperature=0.8
             )
             answer = response.choices[0].message.content
-            st.write(answer)
             st.session_state.messages.append({"role": "assistant", "content": answer})
+            with st.chat_message("assistant"):
+                st.markdown(f"<p>{answer}</p>", unsafe_allow_html=True)
+        except Exception as e:
+            st.error(f"خطأ: {e}")
