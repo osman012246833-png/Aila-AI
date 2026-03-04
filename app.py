@@ -1,5 +1,6 @@
 import streamlit as st
 from groq import Groq
+st.markdown('<link rel="manifest" href="./manifest.json?v=10">', unsafe_allow_html=True)
 
 # 1. إعدادات الصفحة
 st.set_page_config(page_title="Aila AI", page_icon="💠", layout="centered")
