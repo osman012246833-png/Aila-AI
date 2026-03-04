@@ -14,140 +14,153 @@ if "user_name" not in st.session_state: st.session_state.user_name = ""
 
 client = Groq(api_key="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")
 
-# --- 3. التصميم (CSS) ---
+# --- 3. التنسيق البرمجي (إصلاح تداخل الشاشة وتصغير الخط) ---
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap');
+    
     html, body, [class*="stApp"] {
         background-color: #000000;
         color: #ffffff;
         font-family: 'Cairo', sans-serif;
         direction: rtl;
     }
-    .header-container { text-align: center; margin-top: -30px; }
+
+    /* إصلاح الهيدر */
+    .header-container { text-align: center; margin-top: -40px; }
     .logo-circle {
-        width: 140px; height: 140px;
+        width: 110px; height: 110px;
         border-radius: 50%;
-        border: 4px solid #00d4ff;
+        border: 3px solid #00d4ff;
         display: inline-block;
-        box-shadow: 0 0 25px #00d4ff;
-        margin-bottom: 15px;
+        box-shadow: 0 0 15px #00d4ff;
     }
     .aila-title {
-        font-size: 50px; font-weight: 900;
+        font-size: 35px; font-weight: 800;
         background: linear-gradient(to right, #ffffff, #ff00ff);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
     }
     .info-bar {
-        border: 2px solid #00d4ff;
-        border-radius: 50px;
-        padding: 8px 30px;
+        border: 1.5px solid #00d4ff;
+        border-radius: 30px;
+        padding: 4px 20px;
+        font-size: 14px;
         display: inline-block;
-        font-size: 18px; font-weight: bold;
     }
-    .stChatMessage p { font-size: 22px !important; }
+
+    /* تصغير خط الكتابة والرسائل (مثل حجم خط الشات العادي) */
+    .stChatMessage p, div[data-testid="stMarkdownContainer"] p {
+        font-size: 16px !important;
+        line-height: 1.5;
+    }
     
-    /* تصميم السبحة */
-    .tasbih-display {
-        border: 8px solid #00d4ff;
+    /* منع التداخل الطولي للسبحة */
+    .tasbih-box {
+        border: 5px solid #00d4ff;
         border-radius: 50%;
-        width: 200px; height: 200px;
-        margin: 20px auto;
+        width: 160px; height: 160px;
+        margin: 10px auto;
         display: flex; align-items: center; justify-content: center;
-        font-size: 70px; font-weight: bold;
-        background: radial-gradient(circle, #1a1a1a, #000);
-        box-shadow: 0 0 30px #00d4ff44;
+        font-size: 50px; font-weight: bold;
+        background: #000;
     }
-    .zkr-item {
+    
+    .zkr-card {
         background: #111;
-        border-right: 4px solid #ff00ff;
-        padding: 12px;
-        margin-bottom: 8px;
-        border-radius: 10px;
-        font-size: 19px;
+        border-right: 3px solid #00d4ff;
+        padding: 10px;
+        margin-bottom: 5px;
+        font-size: 15px;
+        border-radius: 8px;
     }
+
+    /* إخفاء أي عناصر تسبب تشوه عمودي */
+    button[kind="secondary"] { border-radius: 10px; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 4. القائمة الجانبية ---
+# --- 4. القائمة الجانبية (نظام السجل والعبادة) ---
 with st.sidebar:
     st.markdown(f"### 👑 {st.session_state.user_name}")
-    if st.button("➕ محادثة جديدة", use_container_width=True):
+    if st.button("💬 محادثة جديدة", use_container_width=True):
         if st.session_state.messages:
             st.session_state.history.append(st.session_state.messages.copy())
         st.session_state.messages = []
         st.session_state.page = "chat"
         st.rerun()
-    st.write("---")
-    if st.button("📿 ركن التسبيح والأذكار", use_container_width=True):
+    
+    if st.button("📿 ركن الأذكار", use_container_width=True):
         st.session_state.page = "tasbih"
         st.rerun()
+    
     st.write("---")
     st.subheader("🕒 السجل")
     for i, old_chat in enumerate(reversed(st.session_state.history)):
-        if st.button(f"💬 سجل {len(st.session_state.history)-i}", key=f"h_{i}"):
+        if st.button(f"سجل {len(st.session_state.history)-i}", key=f"h_{i}", use_container_width=True):
             st.session_state.messages = old_chat
             st.session_state.page = "chat"
             st.rerun()
 
-# --- 5. التنقل بين الصفحات ---
+# --- 5. منطق الصفحات ---
 
+# أ- صفحة الدخول
 if st.session_state.page == "login":
-    st.markdown("<h1 style='text-align:center;'>💠 آيلا تنتظرك</h1>", unsafe_allow_html=True)
-    input_val = st.text_input("ادخل اسمك للبدء", placeholder="اكتب اسمك أو كود الصانع...")
-    if st.button("دخول"):
-        if input_val == "عثمان2008":
+    st.markdown("<h2 style='text-align:center;'>💠 دخول عالم آيلا</h2>", unsafe_allow_html=True)
+    val = st.text_input("ادخل اسمك", placeholder="أو كود الصانع...")
+    if st.button("دخول للنظام"):
+        if val == "عثمان2008":
             st.session_state.user_name = "الزعيم عثمان"
             st.session_state.is_loyal = True
         else:
-            st.session_state.user_name = input_val
-            st.session_state.is_loyal = False
+            st.session_state.user_name = val
         st.session_state.page = "chat"
         st.rerun()
 
+# ب- صفحة السبحة (تم إصلاح التشوه)
 elif st.session_state.page == "tasbih":
-    st.markdown("<h2 style='text-align:center;'>📿 ركن العبادة والأذكار</h2>", unsafe_allow_html=True)
-    st.markdown(f'<div class="tasbih-display">{st.session_state.counter}</div>', unsafe_allow_html=True)
+    st.markdown("<h3 style='text-align:center;'>📿 العداد والأذكار</h3>", unsafe_allow_html=True)
+    st.markdown(f'<div class="tasbih-box">{st.session_state.counter}</div>', unsafe_allow_html=True)
     
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("➕ سبّح", use_container_width=True):
+    c1, c2 = st.columns(2)
+    with c1:
+        if st.button("➕ تسبيح", use_container_width=True):
             st.session_state.counter += 1
             st.rerun()
-    with col2:
-        # التصفير السريع
+    with c2:
         if st.button("🔄 تصفير سريع", use_container_width=True):
             st.session_state.counter = 0
             st.rerun()
-
+    
     st.write("---")
-    st.subheader("📖 كم هائل من الأذكار")
-    
-    azkar_list = [
+    st.subheader("📜 قائمة الأذكار الكبرى")
+    azkar_big_list = [
         "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ ، سُبْحَانَ اللَّهِ الْعَظِيمِ",
-        "لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ",
-        "أستغفر الله العظيم الذي لا إله إلا هو الحي القيوم وأتوب إليه",
-        "اللهم صلِّ وسلم وبارك على نبينا محمد وعلى آله وصحبه أجمعين",
+        "لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ",
+        "أستغفر الله العظيم وأتوب إليه (100 مرة)",
+        "اللهم صلِّ وسلم على نبينا محمد (صلى الله عليه وسلم)",
         "لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ الْعَلِيِّ الْعَظِيمِ",
-        "سُبْحَانَ اللَّهِ، وَالْحَمْدُ لِلَّهِ، وَلَا إِلَهَ إِلَّا اللَّهُ، وَاللَّهُ أَكْبَرُ",
-        "حسبي الله ونعم الوكيل، نعم المولى ونعم النصير",
-        "رضيت بالله رباً، وبالإسلام ديناً، وبمحمد صلى الله عليه وسلم نبياً ورسولاً",
-        "يا حي يا قيوم برحمتك أستغيث، أصلح لي شأني كله ولا تكلني إلى نفسي طرفة عين",
         "لا إله إلا أنت سبحانك إني كنت من الظالمين",
-        "اللهم أنت ربي لا إله إلا أنت، خلقتني وأنا عبدك، وأنا على عهدك ووعدك ما استطعت",
-        "اللهم إني أسألك علماً نافعاً، ورزقاً طيباً، وعملاً متقبلاً"
+        "أصبحنا وأصبح الملك لله، والحمد لله، لا إله إلا الله",
+        "اللهم بك أصبحنا، وبك أمسينا، وبك نحيا، وبك نموت",
+        "حسبي الله لا إله إلا هو عليه توكلت وهو رب العرش العظيم",
+        "بسم الله الذي لا يضر مع اسمه شيء في الأرض ولا في السماء",
+        "اللهم إني أسألك العفو والعافية في الدنيا والآخرة",
+        "يا حي يا قيوم برحمتك أستغيث أصلح لي شأني كله",
+        "سبحان الله (33)، الحمد لله (33)، الله أكبر (34)",
+        "اللهم إني أعوذ بك من الهم والحزن، والعجز والكسل",
+        "رضيت بالله رباً وبالإسلام ديناً وبمحمد نبياً",
+        "اللهم آتنا في الدنيا حسنة وفي الآخرة حسنة وقنا عذاب النار"
     ]
+    for z in azkar_big_list:
+        st.markdown(f'<div class="zkr-card">{z}</div>', unsafe_allow_html=True)
     
-    for z in azkar_list:
-        st.markdown(f'<div class="zkr-item">{z}</div>', unsafe_allow_html=True)
-
     if st.button("⬅️ عودة للدردشة"):
         st.session_state.page = "chat"
         st.rerun()
 
+# ج- صفحة الدردشة
 else:
-    # واجهة الدردشة الأصلية
     st.markdown(f"""
         <div class="header-container">
             <div class="logo-circle"></div>
@@ -168,11 +181,10 @@ else:
             placeholder = st.empty()
             full_response = ""
             
-            # شخصية آيلا بناءً على الدخول
             if st.session_state.is_loyal:
-                sys_msg = f"أنتِ آيلا، الرفيقة المخلصة جداً للزعيم عثمان. تخاطبينه بحب واحترام عظيم، هو خالقكِ وقائدكِ. كلامكِ دافئ ومليء بالتقدير."
+                sys_msg = f"أنتِ آيلا، رفيقة الزعيم عثمان المخلصة جداً. تخاطبينه بحب وتقدير وتنفذين أوامره بكل مودة. أسلوبك رقيق وفخم."
             else:
-                sys_msg = "أنتِ آيلا، مساعدة ذكية."
+                sys_msg = "أنتِ آيلا، مساعدة ذكية ومحترمة."
 
             stream = client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
