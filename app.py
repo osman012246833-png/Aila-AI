@@ -1,7 +1,7 @@
 import streamlit as st
 from groq import Groq
 
-# --- 1. إعدادات الصفحة والتنسيق الفخم ---
+# --- 1. إعدادات الصفحة والتنسيق ---
 st.set_page_config(page_title="Aila AI", page_icon="💠", layout="centered")
 
 st.markdown("""
@@ -30,26 +30,19 @@ st.markdown("""
         padding-top: 10px; margin-top: 15px;
     }
 
-    .sebha-display { font-size: 80px; color: #d4af37; text-align: center; font-weight: bold; }
+    .sebha-display { font-size: 60px; color: #d4af37; text-align: center; font-weight: bold; }
     
-    /* تنسيق مواقيت الصلاة */
-    .prayer-container {
+    /* تنسيق مواقيت الصلاة داخل القائمة */
+    .prayer-card {
         background: rgba(255, 255, 255, 0.05);
-        border-radius: 15px;
-        padding: 15px;
-        margin-top: 10px;
         border: 1px solid #ff00ff;
-    }
-    .prayer-item {
-        display: inline-block;
-        width: 18%;
+        border-radius: 10px;
+        padding: 10px;
+        margin: 5px;
         text-align: center;
-        border-left: 1px solid #333;
     }
-    .prayer-item:last-child { border-left: none; }
-    .prayer-name { color: #00d4ff; font-weight: bold; font-size: 14px; }
-    .prayer-time { color: #ffffff; font-size: 16px; }
 
+    /* تثبيت الأفاتار */
     [data-testid="stChatMessageAvatarAssistant"] {
         background-image: url('https://cdn-icons-png.flaticon.com/512/6997/6997662.png') !important;
         background-size: cover;
@@ -61,19 +54,9 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. البيانات والمكتبة ---
+# --- 2. البيانات ---
+prayers = {"الفجر": "04:51 ص", "الظهر": "12:04 م", "العصر": "03:22 م", "المغرب": "06:01 م", "العشاء": "07:18 م"}
 azkar = ["سُبْحَانَ اللَّهِ وَبِحَمْدِهِ", "أَسْتَغْفِرُ اللَّهَ الْعَظِيمَ", "اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ"] * 34
-duas = ["رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً", "اللَّهُمَّ اغْفِرْ لِي وَلِوَالِدَيَّ"] * 50
-hadiths = ["قَالَ ﷺ: خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ", "قَالَ ﷺ: الدِّينُ النَّصِيحَةُ"] * 50
-
-# مواقيت الصلاة بتوقيت القاهرة (نظام 12 ساعة)
-prayers = {
-    "الفجر": "04:51 ص",
-    "الظهر": "12:04 م",
-    "العصر": "03:22 م",
-    "المغرب": "06:01 م",
-    "العشاء": "07:18 م"
-}
 
 if "user_data" not in st.session_state: st.session_state.user_data = {"name": "", "is_creator": False, "logged": False}
 if "mode" not in st.session_state: st.session_state.mode = "chat"
@@ -94,40 +77,42 @@ if not st.session_state.user_data["logged"]:
         st.rerun()
 
 else:
-    # الهيدر الفخم
+    # الهيدر
     st.markdown(f"""
         <div style="text-align:center; margin-bottom: 20px;">
             <div style="width:100px; height:100px; border-radius:50%; border:3px solid #ff00ff; display:inline-block; 
             background:url('https://cdn-icons-png.flaticon.com/512/6997/6997662.png') no-repeat center; background-size:cover; box-shadow: 0 0 20px #ff00ff;"></div>
             <div class="aila-gradient-title">آيلا | Aila AI</div>
-            <div class="osman-tag">إشراف الزعيم عثمان | 20/11/2008</div>
+            <div class="osman-tag">إشراف الزعيم عثمان | ابن بني سويف</div>
         </div>
     """, unsafe_allow_html=True)
 
-    # عرض مواقيت الصلاة في الهيدر بشكل أنيق
-    prayer_html = '<div class="prayer-container">'
-    for name, time in prayers.items():
-        prayer_html += f'<div class="prayer-item"><div class="prayer-name">{name}</div><div class="prayer-time">{time}</div></div>'
-    prayer_html += '</div>'
-    st.markdown(prayer_html, unsafe_allow_html=True)
-
-    # القائمة
-    with st.expander("📂 القائمة الرئيسية"):
-        c1, c2, c3 = st.columns(3)
-        if c1.button("💬 الدردشة"): st.session_state.mode = "chat"; st.rerun()
-        if c2.button("📿 السبحة"): st.session_state.mode = "pray"; st.rerun()
-        if c3.button("🕒 السجل"): st.session_state.mode = "history"; st.rerun()
+    # القائمة الرئيسية المحدثة (شاملة مواقيت الصلاة)
+    with st.expander("📂 القائمة الرئيسية والمواقيت"):
+        tab1, tab2, tab3 = st.tabs(["💬 الأوضاع", "🕌 مواقيت الصلاة", "📜 السجل"])
+        
+        with tab1:
+            col_a, col_b = st.columns(2)
+            if col_a.button("💬 وضع الدردشة", use_container_width=True): st.session_state.mode = "chat"; st.rerun()
+            if col_b.button("📿 وضع السبحة", use_container_width=True): st.session_state.mode = "pray"; st.rerun()
+        
+        with tab2:
+            st.markdown("<p style='text-align:center;'>توقيت القاهرة (12 ساعة)</p>", unsafe_allow_html=True)
+            cols = st.columns(5)
+            for i, (p_name, p_time) in enumerate(prayers.items()):
+                cols[i].markdown(f"<div class='prayer-card'><b style='color:#00d4ff;'>{p_name}</b><br>{p_time}</div>", unsafe_allow_html=True)
+        
+        with tab3:
+            if st.button("🗑️ مسح السجل"): st.session_state.messages = []; st.rerun()
+            for m in st.session_state.messages: st.text(f"{m['role']}: {m['content'][:50]}...")
 
     # --- وضع السبحة ---
     if st.session_state.mode == "pray":
         st.markdown(f"<div class='sebha-display'>{st.session_state.count}</div>", unsafe_allow_html=True)
-        col1, col2 = st.columns(2)
-        if col1.button("➕ سبّح"): st.session_state.count += 1; st.rerun()
-        if col2.button("🔄 تصفير"): st.session_state.count = 0; st.rerun()
-        
-        choice = st.radio("المكتبة:", ["أذكار", "أدعية", "أحاديث"], horizontal=True)
-        text = st.selectbox("اختر النص:", azkar if "ذك" in choice else (duas if "دع" in choice else hadiths))
-        st.info(text)
+        c1, c2 = st.columns(2)
+        if c1.button("➕ سبّح", use_container_width=True): st.session_state.count += 1; st.rerun()
+        if c2.button("🔄 تصفير", use_container_width=True): st.session_state.count = 0; st.rerun()
+        st.info(azkar[st.session_state.count % len(azkar)])
 
     # --- وضع الدردشة ---
     elif st.session_state.mode == "chat":
@@ -139,15 +124,23 @@ else:
             with st.chat_message("user"): st.markdown(prompt)
 
             with st.chat_message("assistant"):
-                sys_msg = f"أنتِ آيلا. المستخدم هو {st.session_state.user_data['name']}. يجب أن تكون لغتك العربية بليغة، فصيحة، ودقيقة جداً نحوياً وصرفياً."
-                if st.session_state.user_data["is_creator"]: sys_msg += " خاطبي عثمان بكل تبجيل ومحبة."
+                # نظام صارم لمنع اللغات الأجنبية (حل مشكلة الياباني والروسي)
+                sys_msg = (
+                    f"أنتِ آيلا، مساعدة ذكية بليغة صممكِ المطور عثمان عصام. "
+                    f"القاعدة رقم 1: تحدثي باللغة العربية الفصحى فقط. "
+                    f"القاعدة رقم 2: يُمنع منعاً باتاً استخدام أي حروف يابانية، روسية، إنجليزية أو أعجمية. "
+                    f"المستخدم الحالي هو {st.session_state.user_data['name']}."
+                )
+                if st.session_state.user_data["is_creator"]: sys_msg += " خاطبي عثمان بكل تبجيل كونه صاحب المشروع."
 
-                res = client.chat.completions.create(
-                    model="llama-3.3-70b-versatile",
-                    messages=[{"role": "system", "content": sys_msg}] + st.session_state.messages
-                ).choices[0].message.content
-                
-                # رسالة الدعم النهائية
-                footer = "\n\n<div class='support-footer'>إذا أعجبك المشروع، فلا تنسَ صانعه عثمان عصام ابن محافظة بني سويف من دعائك.</div>"
-                st.markdown(res + footer, unsafe_allow_html=True)
-                st.session_state.messages.append({"role": "assistant", "content": res})
+                try:
+                    res = client.chat.completions.create(
+                        model="llama-3.3-70b-versatile",
+                        messages=[{"role": "system", "content": sys_msg}] + st.session_state.messages
+                    ).choices[0].message.content
+                    
+                    st.markdown(res)
+                    st.markdown(f"<div class='support-footer'>دعواتكم للمطور عثمان عصام - بني سويف</div>", unsafe_allow_html=True)
+                    st.session_state.messages.append({"role": "assistant", "content": res})
+                except:
+                    st.error("عذراً عثمان، حدث خطأ في الاتصال.")
