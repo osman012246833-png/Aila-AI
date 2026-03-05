@@ -10,7 +10,6 @@ st.markdown("""
     [data-testid="stSidebar"], [data-testid="stSidebarNav"] { display: none !important; }
     html, body, [class*="stApp"] { background-color: #000000; color: #ffffff; font-family: 'Cairo', sans-serif; direction: rtl; }
     
-    /* عنوان آيلا المتدرج */
     .aila-gradient-title {
         font-size: 45px; font-weight: 900;
         background: linear-gradient(to right, #ffffff, #ff00ff, #ffffff);
@@ -18,7 +17,6 @@ st.markdown("""
         margin-bottom: 5px; text-align: center;
     }
     
-    /* تاق الزعيم */
     .osman-tag {
         border: 1.5px solid #00d4ff; border-radius: 50px;
         padding: 4px 20px; display: inline-block;
@@ -26,17 +24,32 @@ st.markdown("""
         background: rgba(0, 212, 255, 0.1);
     }
     
-    /* رسالة الدعم لابن بني سويف */
     .support-footer {
         font-size: 13px; color: #ff00ff; font-weight: bold;
         text-align: center; border-top: 1px solid #333;
         padding-top: 10px; margin-top: 15px;
     }
 
-    /* عداد السبحة */
     .sebha-display { font-size: 80px; color: #d4af37; text-align: center; font-weight: bold; }
     
-    /* تحسين شكل الأفاتار */
+    /* تنسيق مواقيت الصلاة */
+    .prayer-container {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        padding: 15px;
+        margin-top: 10px;
+        border: 1px solid #ff00ff;
+    }
+    .prayer-item {
+        display: inline-block;
+        width: 18%;
+        text-align: center;
+        border-left: 1px solid #333;
+    }
+    .prayer-item:last-child { border-left: none; }
+    .prayer-name { color: #00d4ff; font-weight: bold; font-size: 14px; }
+    .prayer-time { color: #ffffff; font-size: 16px; }
+
     [data-testid="stChatMessageAvatarAssistant"] {
         background-image: url('https://cdn-icons-png.flaticon.com/512/6997/6997662.png') !important;
         background-size: cover;
@@ -48,10 +61,19 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. المكتبة الإسلامية ---
+# --- 2. البيانات والمكتبة ---
 azkar = ["سُبْحَانَ اللَّهِ وَبِحَمْدِهِ", "أَسْتَغْفِرُ اللَّهَ الْعَظِيمَ", "اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ"] * 34
 duas = ["رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً", "اللَّهُمَّ اغْفِرْ لِي وَلِوَالِدَيَّ"] * 50
 hadiths = ["قَالَ ﷺ: خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ", "قَالَ ﷺ: الدِّينُ النَّصِيحَةُ"] * 50
+
+# مواقيت الصلاة بتوقيت القاهرة (نظام 12 ساعة)
+prayers = {
+    "الفجر": "04:51 ص",
+    "الظهر": "12:04 م",
+    "العصر": "03:22 م",
+    "المغرب": "06:01 م",
+    "العشاء": "07:18 م"
+}
 
 if "user_data" not in st.session_state: st.session_state.user_data = {"name": "", "is_creator": False, "logged": False}
 if "mode" not in st.session_state: st.session_state.mode = "chat"
@@ -81,6 +103,13 @@ else:
             <div class="osman-tag">إشراف الزعيم عثمان | 20/11/2008</div>
         </div>
     """, unsafe_allow_html=True)
+
+    # عرض مواقيت الصلاة في الهيدر بشكل أنيق
+    prayer_html = '<div class="prayer-container">'
+    for name, time in prayers.items():
+        prayer_html += f'<div class="prayer-item"><div class="prayer-name">{name}</div><div class="prayer-time">{time}</div></div>'
+    prayer_html += '</div>'
+    st.markdown(prayer_html, unsafe_allow_html=True)
 
     # القائمة
     with st.expander("📂 القائمة الرئيسية"):
