@@ -12,7 +12,7 @@ st.markdown("""
     
     .aila-gradient-title {
         font-size: 45px; font-weight: 900;
-        background: linear-gradient(to right, #ffffff, #ff00ff, #ffffff);
+        background: linear-gradient(to right, #ffffff, #00d4ff, #ff00ff);
         -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         margin-bottom: 5px; text-align: center;
     }
@@ -24,6 +24,10 @@ st.markdown("""
         background: rgba(0, 212, 255, 0.1);
     }
     
+    .tribute-text {
+        color: #aaaaaa; font-size: 14px; text-align: center; font-style: italic; margin-bottom: 20px;
+    }
+    
     .support-footer {
         font-size: 13px; color: #ff00ff; font-weight: bold;
         text-align: center; border-top: 1px solid #333;
@@ -32,17 +36,12 @@ st.markdown("""
 
     .sebha-display { font-size: 60px; color: #d4af37; text-align: center; font-weight: bold; }
     
-    /* تنسيق مواقيت الصلاة داخل القائمة */
     .prayer-card {
         background: rgba(255, 255, 255, 0.05);
-        border: 1px solid #ff00ff;
-        border-radius: 10px;
-        padding: 10px;
-        margin: 5px;
-        text-align: center;
+        border: 1px solid #ff00ff; border-radius: 10px;
+        padding: 10px; margin: 5px; text-align: center;
     }
 
-    /* تثبيت الأفاتار */
     [data-testid="stChatMessageAvatarAssistant"] {
         background-image: url('https://cdn-icons-png.flaticon.com/512/6997/6997662.png') !important;
         background-size: cover;
@@ -68,6 +67,7 @@ client = Groq(api_key="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"
 # --- 3. نظام الدخول ---
 if not st.session_state.user_data["logged"]:
     st.markdown("<h2 style='text-align:center;'>💠 مرحباً بك في عالم آيلا</h2>", unsafe_allow_html=True)
+    st.markdown("<p class='tribute-text'>هذا العمل إحياء لذكرى ميلاد الجميلة آيلا</p>", unsafe_allow_html=True)
     name_in = st.text_input("فضلاً، أدخل اسمك:")
     if st.button("دخول"):
         if name_in.strip().lower() == "osman 6/11/2008":
@@ -84,27 +84,23 @@ else:
             background:url('https://cdn-icons-png.flaticon.com/512/6997/6997662.png') no-repeat center; background-size:cover; box-shadow: 0 0 20px #ff00ff;"></div>
             <div class="aila-gradient-title">آيلا | Aila AI</div>
             <div class="osman-tag">إشراف الزعيم عثمان | ابن بني سويف</div>
+            <p class='tribute-text' style='margin-top:10px;'>بُني هذا الذكاء تخليداً لذكرى ميلاد "آيلا" الجميلة</p>
         </div>
     """, unsafe_allow_html=True)
 
-    # القائمة الرئيسية المحدثة (شاملة مواقيت الصلاة)
     with st.expander("📂 القائمة الرئيسية والمواقيت"):
         tab1, tab2, tab3 = st.tabs(["💬 الأوضاع", "🕌 مواقيت الصلاة", "📜 السجل"])
-        
         with tab1:
             col_a, col_b = st.columns(2)
             if col_a.button("💬 وضع الدردشة", use_container_width=True): st.session_state.mode = "chat"; st.rerun()
             if col_b.button("📿 وضع السبحة", use_container_width=True): st.session_state.mode = "pray"; st.rerun()
-        
         with tab2:
-            st.markdown("<p style='text-align:center;'>توقيت القاهرة (12 ساعة)</p>", unsafe_allow_html=True)
+            st.markdown("<p style='text-align:center;'>توقيت القاهرة</p>", unsafe_allow_html=True)
             cols = st.columns(5)
             for i, (p_name, p_time) in enumerate(prayers.items()):
                 cols[i].markdown(f"<div class='prayer-card'><b style='color:#00d4ff;'>{p_name}</b><br>{p_time}</div>", unsafe_allow_html=True)
-        
         with tab3:
             if st.button("🗑️ مسح السجل"): st.session_state.messages = []; st.rerun()
-            for m in st.session_state.messages: st.text(f"{m['role']}: {m['content'][:50]}...")
 
     # --- وضع السبحة ---
     if st.session_state.mode == "pray":
@@ -124,23 +120,24 @@ else:
             with st.chat_message("user"): st.markdown(prompt)
 
             with st.chat_message("assistant"):
-                # نظام صارم لمنع اللغات الأجنبية (حل مشكلة الياباني والروسي)
+                # تحسين الـ System Prompt ليكون صارماً جداً تجاه اللغة العربية
                 sys_msg = (
-                    f"أنتِ آيلا، مساعدة ذكية بليغة صممكِ المطور عثمان عصام. "
-                    f"القاعدة رقم 1: تحدثي باللغة العربية الفصحى فقط. "
-                    f"القاعدة رقم 2: يُمنع منعاً باتاً استخدام أي حروف يابانية، روسية، إنجليزية أو أعجمية. "
-                    f"المستخدم الحالي هو {st.session_state.user_data['name']}."
+                    f"أنتِ 'آيلا'. سُميتِ بهذا الاسم إحياءً لذكرى ميلاد طفلة جميلة تحمل نفس الاسم. "
+                    f"مطورك هو عثمان عصام. صفتك الأساسية: الفصاحة المطلقة. "
+                    f"ممنوع استخدام أي لغة غير العربية. يمنع تماماً الحروف الروسية أو اليابانية أو الإنجليزية. "
+                    f"رداً على أي سؤال، استخدمي لغة عربية سليمة 100% وبأسلوب راقٍ."
                 )
-                if st.session_state.user_data["is_creator"]: sys_msg += " خاطبي عثمان بكل تبجيل كونه صاحب المشروع."
+                if st.session_state.user_data["is_creator"]: sys_msg += " تعاملي مع عثمان بتقدير خاص كونه الأب الروحي لهذا المشروع."
 
                 try:
                     res = client.chat.completions.create(
                         model="llama-3.3-70b-versatile",
-                        messages=[{"role": "system", "content": sys_msg}] + st.session_state.messages
+                        messages=[{"role": "system", "content": sys_msg}] + st.session_state.messages,
+                        temperature=0.7 # خفض درجة الحرارة يجعل الإجابة أكثر دقة لغوياً
                     ).choices[0].message.content
                     
                     st.markdown(res)
-                    st.markdown(f"<div class='support-footer'>دعواتكم للمطور عثمان عصام - بني سويف</div>", unsafe_allow_html=True)
+                    st.markdown(f"<div class='support-footer'>إحياءً لذكرى ميلاد آيلا - بإشراف عثمان عصام</div>", unsafe_allow_html=True)
                     st.session_state.messages.append({"role": "assistant", "content": res})
                 except:
-                    st.error("عذراً عثمان، حدث خطأ في الاتصال.")
+                    st.error("عذراً، حدث خطأ فني.")
