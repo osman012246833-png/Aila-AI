@@ -63,10 +63,10 @@ if "mode" not in st.session_state: st.session_state.mode = "chat"
 if "count" not in st.session_state: st.session_state.count = 0
 if "messages" not in st.session_state: st.session_state.messages = []
 
-# --- السطر 66: تحديث المفتاح الجديد ---
-client = Groq(api_key="gsksk_Q2mla9H0csklmaTtdgrNWGdyb3FYz0kmDrhvfkR2paNTxpCTBZEC")
+#client = Groq(api_key=st.secrets["GROQ_API_KEY"])
+ --- السطر 66: تحديث المفتاح الجديد ---
 
-# --- 3. نظام الدخول ---
+     # --- 3. نظام الدخول ---
 if not st.session_state.user_data["logged"]:
     st.markdown("<div style='text-align:center;'><h2>💠 Aila AI | آيلا</h2><p>إحياءً لذكرى 20/11/2008</p></div>", unsafe_allow_html=True)
     name_in = st.text_input("ادخل اسمك للبدء:")
