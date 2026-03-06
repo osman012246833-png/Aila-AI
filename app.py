@@ -64,7 +64,7 @@ if "count" not in st.session_state: st.session_state.count = 0
 if "messages" not in st.session_state: st.session_state.messages = []
 
 # --- السطر 66: تحديث المفتاح الجديد ---
-client = Groq(api_key="Gsk_Q2mla9H0csklmaTtdgrNWGdyb3FYz0kmDrhvfkR2paNTxpCTBZEC")
+client = Groq(api_key="gsksk_Q2mla9H0csklmaTtdgrNWGdyb3FYz0kmDrhvfkR2paNTxpCTBZEC")
 
 # --- 3. نظام الدخول ---
 if not st.session_state.user_data["logged"]:
