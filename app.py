@@ -63,7 +63,7 @@ if "mode" not in st.session_state: st.session_state.mode = "chat"
 if "count" not in st.session_state: st.session_state.count = 0
 if "messages" not in st.session_state: st.session_state.messages = []
 
-# ربط المفتاح من الخزنة (Secrets) لضمان الأمان
+# ربط المفتاح من الخزنة السرية (Secrets) لضمان الأمان المطلق
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
 # --- 3. نظام الدخول ---
