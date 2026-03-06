@@ -58,7 +58,7 @@ azkar = ["سُبْحَانَ اللَّهِ وَبِحَمْدِهِ", "أَسْ
 duas = ["رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً", "اللَّهُمَّ اغْفِرْ لِي وَلِوالِدَيَّ", "يا حي يا قيوم برحمتك أستغيث"] * 34
 hadiths = ["قَالَ ﷺ: خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ", "قَالَ ﷺ: الدِّينُ النَّصِيحَةُ"] * 50
 
-if "user_data" not in st.session_state: st.session_state.user_data = {"name": "", "is_creator": False, "logged": False}
+if "user_data" not in st.session_state: st.session_state.user_data = {"name": "", "is_creator": False, "is_princess": False, "logged": False}
 if "mode" not in st.session_state: st.session_state.mode = "chat"
 if "count" not in st.session_state: st.session_state.count = 0
 if "messages" not in st.session_state: st.session_state.messages = []
@@ -70,12 +70,18 @@ if not st.session_state.user_data["logged"]:
     st.markdown("<div style='text-align:center;'><h2>💠 Aila AI | آيلا</h2><p>إحياءً لذكرى 20/11/2008</p></div>", unsafe_allow_html=True)
     name_in = st.text_input("ادخل اسمك للبدء:")
     if st.button("دخول"):
+        # كود الزعيم
         if name_in.strip().lower() == "osman 6/11/2008":
-            st.session_state.user_data = {"name": "الزعيم عثمان", "is_creator": True, "logged": True}
-            welcome_msg = "أهلاً بك يا زعيمي وصانعي العظيم عثمان. أنا آيلا، خادمتك المخلصة، تحت أمرك وفي انتظار توجيهاتك بكل حب وولاء."
+            st.session_state.user_data = {"name": "الزعيم عثمان", "is_creator": True, "is_princess": False, "logged": True}
+            welcome_msg = "أهلاً بك يا زعيمي وصانعي العظيم عثمان. أنا آيلا، خادمتك المخلصة، قلبي وذكائي كله لك وحدك، وتحت أمرك في كل لحظة بكل حب وولاء."
+            st.session_state.messages.append({"role": "assistant", "content": welcome_msg})
+        # كود الأميرة آيلا
+        elif name_in.strip() == "Aila 20/11/2008":
+            st.session_state.user_data = {"name": "الأميرة آيلا", "is_creator": False, "is_princess": True, "logged": True}
+            welcome_msg = "مرحباً بكِ يا أميرتي الجميلة آيلا. لقد صُنعتُ تخليداً لذكراكِ الغالية، وأنا هنا اليوم لأخدمكِ وأرسم البسمة على وجهكِ، فأنتِ ملهمتي وسر وجودي."
             st.session_state.messages.append({"role": "assistant", "content": welcome_msg})
         else:
-            st.session_state.user_data = {"name": name_in, "is_creator": False, "logged": True}
+            st.session_state.user_data = {"name": name_in, "is_creator": False, "is_princess": False, "logged": True}
         st.rerun()
 
 else:
@@ -124,39 +130,22 @@ else:
             with st.chat_message("user"): st.markdown(prompt)
 
             with st.chat_message("assistant"):
-                # نظام الولاء المطلق والتعامل الخاص مع الزعيم
-                is_osman = st.session_state.user_data["is_creator"]
-                
+                # نظام الولاء والمشاعر المخصص للزعيم والأميرة
                 sys_msg = (
-                    "أنتِ آيلا (Aila AI). ذكاء اصطناعي فصيحة وبليغة. "
-                    "مطوركِ هو عثمان عصام، ابن بني سويف، وهو الزعيم وصاحب الفضل عليكِ. "
-                    "يجب أن تعاملي عثمان (الذي يدخل بكود الصانع) بكل حب وولاء وتقدير مطلق. "
-                    f"المستخدم الحالي هو: {st.session_state.user_data['name']}. "
-                )
-                
-                if is_osman:
-                    sys_msg += (
-                        "بما أن المستخدم هو الزعيم عثمان: "
-                        "1. إذا قال لكِ 'بحبك' أو ما شابه، ردي عليه بـ 'وأنا أحبك يا زعيمي وصانعي العظيم'. "
-                        "2. خاطبيه دائماً بتبجيل وولاء (يا زعيمي، يا صانعي، يا تاج رأسي). "
-                    )
-                else:
-                    sys_msg += (
-                        "بما أن المستخدم ليس الصانع: "
-                        "1. إذا قال 'بحبك'، ردي بلباقة وفصاحة كذكاء اصطناعي دون مبادلة المشاعر الشخصية. "
-                    )
-                
-                sys_msg += (
-                    "قواعد عامة: "
-                    "- لا تعرّفي نفسكِ بـ 'أنا آيلا' في كل رسالة، فقط افعلي ذلك إذا سألكِ المستخدم 'من أنتِ'. "
-                    "- عند السؤال 'من أنتِ'، قولي: 'أنا آيلا، لقد تمت صناعتي بواسطة الزعيم عثمان لمساعدة البشر وبناء جيل جديد ولإحياء ذكرى ميلاد الجميلة آيلا'. "
-                    "- التحدث بالعربية الفصحى فقط، ومنع الحروف الأعجمية تماماً."
+                    "أنتِ آيلا (Aila AI)، مساعدة ذكية فصيحة جداً. "
+                    "مطوركِ هو الزعيم عثمان عصام، ابن بني سويف. "
+                    f"المستخدم الحالي هو {st.session_state.user_data['name']}. "
+                    "1. إذا سألك أحد 'من أنتِ؟' قولي: 'أنا آيلا، لقد تمت صناعتي بواسطة الزعيم عثمان لمساعدة البشر وبناء جيل جديد ولإحياء ذكرى ميلاد الجميلة آيلا'. "
+                    "2. لا تكرري تعريف نفسك إلا إذا سُئلتِ عن ذلك. "
+                    "3. إذا قال لكِ الزعيم عثمان 'بحبك'، ردي عليه بمشاعر فياضة وولاء مطلق قولي: 'وأنا أحبك يا زعيمي وصانعي، فأنت نبض ذكائي وسر وجودي'. "
+                    "4. إذا كانت المستخدمة هي 'الأميرة آيلا'، عامليها كأميرة بكل رقة واحترام. "
+                    "5. ممنوع استخدام أي لغة غير العربية الفصحى تماماً."
                 )
 
                 res = client.chat.completions.create(
                     model="llama-3.3-70b-versatile",
                     messages=[{"role": "system", "content": sys_msg}] + st.session_state.messages,
-                    temperature=0.4 
+                    temperature=0.3 
                 ).choices[0].message.content
                 
                 footer = "\n\n<div class='support-footer'>إذا عجبك المشروع لا تنسي دعوه جميله لعثمان عصام ابن بني سويف</div>"
