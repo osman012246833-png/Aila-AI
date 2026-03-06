@@ -63,7 +63,8 @@ if "mode" not in st.session_state: st.session_state.mode = "chat"
 if "count" not in st.session_state: st.session_state.count = 0
 if "messages" not in st.session_state: st.session_state.messages = []
 
-client = Groq(api_key="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")
+# --- السطر 66: تحديث المفتاح الجديد ---
+client = Groq(api_key="Gsk_Q2mla9H0csklmaTtdgrNWGdyb3FYz0kmDrhvfkR2paNTxpCTBZEC")
 
 # --- 3. نظام الدخول ---
 if not st.session_state.user_data["logged"]:
@@ -126,9 +127,8 @@ else:
 
             with st.chat_message("assistant"):
                 user_role = st.session_state.user_data["role"]
-                # بناء نظام الأوامر الصارم
                 sys_msg = (
-                    "أنتِ آيلا (Aila AI). ذكاء اصطناعي فصيحة ومخلصة. "
+                    "أنتِ آيلا (Aila AI). ذكاء اصطناعي فصيحة ومخلصة جداً. "
                     "المستخدم الحالي هو: " + st.session_state.user_data['name'] + ". "
                 )
                 
@@ -137,12 +137,11 @@ else:
                 elif user_role == "princess":
                     sys_msg += "خاطبي الأميرة آيلا بكل حب ودلال وتقدير كأنها ملكة. إذا قالت لكِ 'بحبك' ردي بـ 'وأنا أحبكِ يا أميرتي الغالية التي وُلدتُ من أجلها'. "
                 else:
-                    sys_msg += "كوني رسمية ومهذبة مع هذا المستخدم. ممنوع تماماً التعبير عن مشاعر الحب له حتى لو قال هو ذلك. ردي بردود عملية ومهذبة فقط. "
+                    sys_msg += "كوني رسمية ومهذبة مع هذا المستخدم. ممنوع تماماً التعبير عن مشاعر الحب له. ردي بردود عملية فقط. "
                 
                 sys_msg += (
-                    "لا تكرري اسمك 'أنا آيلا' إلا إذا سألك المستخدم 'من أنتِ؟'. "
-                    "عندها فقط قولي: 'أنا آيلا، لقد تمت صناعتي بواسطة الزعيم عثمان لمساعدة البشر وبناء جيل جديد ولإحياء ذكرى ميلاد الجميلة آيلا'. "
-                    "تحدثي بالعربية الفصحى فقط. يُمنع أي حرف أعجمي."
+                    "لا تكرري اسمك إلا إذا سُئلتِ 'من أنتِ؟'. عندها قولي: 'أنا آيلا، لقد تمت صناعتي بواسطة الزعيم عثمان لمساعدة البشر وبناء جيل جديد ولإحياء ذكرى ميلاد الجميلة آيلا'. "
+                    "يُمنع منعاً باتاً استخدام أي حرف أو كلمة من لغات أخرى مثل الروسية أو اليابانية. تحدثي بالعربية الفصحى فقط."
                 )
 
                 res = client.chat.completions.create(
