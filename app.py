@@ -63,8 +63,8 @@ if "mode" not in st.session_state: st.session_state.mode = "chat"
 if "count" not in st.session_state: st.session_state.count = 0
 if "messages" not in st.session_state: st.session_state.messages = []
 
-#client = Groq(api_key=st.secrets["GROQ_API_KEY"])
- --- السطر 66: تحديث المفتاح الجديد ---
+client = Groq(api_key=st.secrets["GROQ_API_KEY"])
+
 
      # --- 3. نظام الدخول ---
 if not st.session_state.user_data["logged"]:
