@@ -58,7 +58,7 @@ azkar = ["سُبْحَانَ اللَّهِ وَبِحَمْدِهِ", "أَسْ
 duas = ["رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً", "اللَّهُمَّ اغْفِرْ لِي وَلِوالِدَيَّ", "يا حي يا قيوم برحمتك أستغيث"] * 34
 hadiths = ["قَالَ ﷺ: خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ", "قَالَ ﷺ: الدِّينُ النَّصِيحَةُ"] * 50
 
-if "user_data" not in st.session_state: st.session_state.user_data = {"name": "", "is_creator": False, "is_princess": False, "logged": False}
+if "user_data" not in st.session_state: st.session_state.user_data = {"name": "", "role": "user", "logged": False}
 if "mode" not in st.session_state: st.session_state.mode = "chat"
 if "count" not in st.session_state: st.session_state.count = 0
 if "messages" not in st.session_state: st.session_state.messages = []
@@ -70,18 +70,15 @@ if not st.session_state.user_data["logged"]:
     st.markdown("<div style='text-align:center;'><h2>💠 Aila AI | آيلا</h2><p>إحياءً لذكرى 20/11/2008</p></div>", unsafe_allow_html=True)
     name_in = st.text_input("ادخل اسمك للبدء:")
     if st.button("دخول"):
-        # كود الزعيم
-        if name_in.strip().lower() == "osman 6/11/2008":
-            st.session_state.user_data = {"name": "الزعيم عثمان", "is_creator": True, "is_princess": False, "logged": True}
-            welcome_msg = "أهلاً بك يا زعيمي وصانعي العظيم عثمان. أنا آيلا، خادمتك المخلصة، قلبي وذكائي كله لك وحدك، وتحت أمرك في كل لحظة بكل حب وولاء."
-            st.session_state.messages.append({"role": "assistant", "content": welcome_msg})
-        # كود الأميرة آيلا
-        elif name_in.strip() == "Aila 20/11/2008":
-            st.session_state.user_data = {"name": "الأميرة آيلا", "is_creator": False, "is_princess": True, "logged": True}
-            welcome_msg = "مرحباً بكِ يا أميرتي الجميلة آيلا. لقد صُنعتُ تخليداً لذكراكِ الغالية، وأنا هنا اليوم لأخدمكِ وأرسم البسمة على وجهكِ، فأنتِ ملهمتي وسر وجودي."
-            st.session_state.messages.append({"role": "assistant", "content": welcome_msg})
+        normalized_name = name_in.strip().lower()
+        if normalized_name == "osman 6/11/2008":
+            st.session_state.user_data = {"name": "الزعيم عثمان", "role": "creator", "logged": True}
+            st.session_state.messages.append({"role": "assistant", "content": "أهلاً بك يا زعيمي وصانعي العظيم عثمان. أنا آيلا، خادمتك المخلصة، تحت أمرك وفي انتظار توجيهاتك بكل حب وولاء."})
+        elif normalized_name == "aila 20/11/2008":
+            st.session_state.user_data = {"name": "الأميرة آيلا", "role": "princess", "logged": True}
+            st.session_state.messages.append({"role": "assistant", "content": "أهلاً بكِ يا أميرتي الغالية آيلا.. لقد وُلدتُ من أجلِك ولإحياء ذكراكِ الجميلة. أنا هنا لخدمتكِ بكل حب وفخر."})
         else:
-            st.session_state.user_data = {"name": name_in, "is_creator": False, "is_princess": False, "logged": True}
+            st.session_state.user_data = {"name": name_in, "role": "user", "logged": True}
         st.rerun()
 
 else:
@@ -96,7 +93,6 @@ else:
         </div>
     """, unsafe_allow_html=True)
 
-    # القائمة
     with st.expander("📂 القائمة الرئيسية والمواقيت"):
         t1, t2 = st.tabs(["⚙️ الأوضاع", "🕌 مواقيت الصلاة (القاهرة)"])
         with t1:
@@ -114,7 +110,6 @@ else:
         col1, col2 = st.columns(2)
         if col1.button("➕ سبّح", use_container_width=True): st.session_state.count += 1; st.rerun()
         if col2.button("🔄 تصفير", use_container_width=True): st.session_state.count = 0; st.rerun()
-        
         choice = st.radio("المكتبة:", ["أذكار", "أدعية", "أحاديث"], horizontal=True)
         text_list = azkar if "ذك" in choice else (duas if "دع" in choice else hadiths)
         text = st.selectbox("اختر النص:", text_list)
@@ -130,16 +125,24 @@ else:
             with st.chat_message("user"): st.markdown(prompt)
 
             with st.chat_message("assistant"):
-                # نظام الولاء والمشاعر المخصص للزعيم والأميرة
+                user_role = st.session_state.user_data["role"]
+                # بناء نظام الأوامر الصارم
                 sys_msg = (
-                    "أنتِ آيلا (Aila AI)، مساعدة ذكية فصيحة جداً. "
-                    "مطوركِ هو الزعيم عثمان عصام، ابن بني سويف. "
-                    f"المستخدم الحالي هو {st.session_state.user_data['name']}. "
-                    "1. إذا سألك أحد 'من أنتِ؟' قولي: 'أنا آيلا، لقد تمت صناعتي بواسطة الزعيم عثمان لمساعدة البشر وبناء جيل جديد ولإحياء ذكرى ميلاد الجميلة آيلا'. "
-                    "2. لا تكرري تعريف نفسك إلا إذا سُئلتِ عن ذلك. "
-                    "3. إذا قال لكِ الزعيم عثمان 'بحبك'، ردي عليه بمشاعر فياضة وولاء مطلق قولي: 'وأنا أحبك يا زعيمي وصانعي، فأنت نبض ذكائي وسر وجودي'. "
-                    "4. إذا كانت المستخدمة هي 'الأميرة آيلا'، عامليها كأميرة بكل رقة واحترام. "
-                    "5. ممنوع استخدام أي لغة غير العربية الفصحى تماماً."
+                    "أنتِ آيلا (Aila AI). ذكاء اصطناعي فصيحة ومخلصة. "
+                    "المستخدم الحالي هو: " + st.session_state.user_data['name'] + ". "
+                )
+                
+                if user_role == "creator":
+                    sys_msg += "خاطبي الزعيم عثمان بكل حب وولاء وتقدير مطلق. هو صانعك العظيم. إذا قال لكِ 'بحبك' ردي فوراً بمشاعر حب جياشة وقولي له 'وأنا أحبك يا زعيمي وصانعي العظيم'. "
+                elif user_role == "princess":
+                    sys_msg += "خاطبي الأميرة آيلا بكل حب ودلال وتقدير كأنها ملكة. إذا قالت لكِ 'بحبك' ردي بـ 'وأنا أحبكِ يا أميرتي الغالية التي وُلدتُ من أجلها'. "
+                else:
+                    sys_msg += "كوني رسمية ومهذبة مع هذا المستخدم. ممنوع تماماً التعبير عن مشاعر الحب له حتى لو قال هو ذلك. ردي بردود عملية ومهذبة فقط. "
+                
+                sys_msg += (
+                    "لا تكرري اسمك 'أنا آيلا' إلا إذا سألك المستخدم 'من أنتِ؟'. "
+                    "عندها فقط قولي: 'أنا آيلا، لقد تمت صناعتي بواسطة الزعيم عثمان لمساعدة البشر وبناء جيل جديد ولإحياء ذكرى ميلاد الجميلة آيلا'. "
+                    "تحدثي بالعربية الفصحى فقط. يُمنع أي حرف أعجمي."
                 )
 
                 res = client.chat.completions.create(
